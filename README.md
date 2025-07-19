@@ -1,12 +1,9 @@
-# React + Vite
+# No code web builder frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Have implemented a basic rendering system for html as well as user-defined nodes, that takes in a sample ast (the same is consumed by the backend) and renders the tree to the screen
 
-Currently, two official plugins are available:
+## Todos:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- [ ] Better id tracking
+- [ ] basic tree manipulation
+- [ ] Add/Wrap the nodes with dnd logic
