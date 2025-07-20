@@ -82,6 +82,7 @@ export const Renderer = ({ node, props }) => {
     // }
 
     const { getState, setState } = useStateStore()
+    const ctrState = getState("ctrval")
 
     // console.log("current node", node)
     // console.log("current props", props)
@@ -91,6 +92,8 @@ export const Renderer = ({ node, props }) => {
             {props.text}
         </>;
     }
+
+    let jsx = null;
 
     if (!isUserDefElement(node)) {
 
@@ -105,51 +108,75 @@ export const Renderer = ({ node, props }) => {
             }
         }
 
-        return (
+        jsx = (
             <node.type {...props} {...extraProps}>
                 {node.children && node.children.map((child) => (
                     <Renderer key={child.id} node={child} props={resolveProps(child.props, props, child, getState, setState)} />
                 ))}
             </node.type>
         )
-    }
-
-
-    // custom nodes now
-    const customNodeType = node.type.split(':')[1]
-    const customNodeMetadata = userDefComps[customNodeType]
-    const customNodeBody = customNodeMetadata.body
-
-    // console.log("custom node metadata", customNodeMetadata)
-    // console.log("custom node body", customNodeBody)
-
-    if (!customNodeMetadata.takesChildren) {
-        return (
-            <>
-                {customNodeBody.map((bodyNode) => (
-                    <Renderer key={bodyNode.id} node={bodyNode} props={resolveProps(bodyNode.props, props, bodyNode, getState, setState)} />
-                ))}
-            </>
-        )
     } else {
+        const customNodeType = node.type.split(':')[1]
+        const customNodeMetadata = userDefComps[customNodeType]
+        const customNodeBody = customNodeMetadata.body
+
+        // console.log("custom node metadata", customNodeMetadata)
+        // console.log("custom node body", customNodeBody)
+
+        if (!customNodeMetadata.takesChildren) {
+            jsx = (
+                <>
+                    {customNodeBody.map((bodyNode) => (
+                        <Renderer key={bodyNode.id} node={bodyNode} props={resolveProps(bodyNode.props, props, bodyNode, getState, setState)} />
+                    ))}
+                </>
+            )
+        } else {
+            jsx = (
+                <>
+                    {customNodeBody.map((bodyNode) => {
+                        if (bodyNode.type === "children") {
+                            return (
+                                <>
+                                    {node.children.map((child) => (
+                                        <Renderer key={child.id} node={child} props={resolveProps(child.props, props, child, getState, setState)} />
+                                    ))}
+                                </>
+                            )
+                        } else {
+                            return (
+                                <Renderer key={bodyNode.id} node={bodyNode} props={resolveProps(bodyNode.props, props, bodyNode, getState, setState)} />
+                            )
+                        }
+                    })}
+                </>
+            )
+        }
+    }
+
+
+
+    if (node.id === "card-description") {
         return (
-            <>
-                {customNodeBody.map((bodyNode) => {
-                    if (bodyNode.type === "children") {
-                        return (
-                            <>
-                                {node.children.map((child) => (
-                                    <Renderer key={child.id} node={child} props={resolveProps(child.props, props, child, getState, setState)} />
-                                ))}
-                            </>
-                        )
-                    } else {
-                        return (
-                            <Renderer key={bodyNode.id} node={bodyNode} props={resolveProps(bodyNode.props, props, bodyNode, getState, setState)} />
-                        )
-                    }
-                })}
-            </>
+            <TmpEffectWrapper depArray={[props.text]}>
+                {jsx}
+            </TmpEffectWrapper>
         )
     }
+
+
+    return jsx;
+}
+
+const TmpEffectWrapper = ({ children, depArray = [] }) => {
+
+    useEffect(() => {
+        console.log("tmp effect wrapper")
+    }, [...depArray])
+
+    return (
+        <div>
+            {children}
+        </div>
+    )
 }
