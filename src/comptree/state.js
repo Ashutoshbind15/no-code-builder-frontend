@@ -22,6 +22,10 @@ export const starterState = {
                             name: "className",
                             value: "bg-blue-500"
                         }],
+                        actions: [{
+                            trigger: "onClick",
+                            actionParams: ["mutatestate", "ctrval", "inc"]
+                        }],
                         children: [{
                             id: "sidebar-button-text",
                             type: "stringLiteral",
@@ -89,7 +93,7 @@ export const starterState = {
                                             type: "stringLiteral",
                                             props: [{
                                                 name: "text",
-                                                value: "Hello"
+                                                value: "state:ctrval"
                                             }]
                                         }]
                                     }
