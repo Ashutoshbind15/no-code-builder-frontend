@@ -1,9 +1,8 @@
 import { atom, useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { useEffect } from 'react'
-import { Text } from '../customcomps/Text'
-import { Card as UserCard } from '../customcomps/UserCard'
-import { UserContainer } from '../customcomps/UserContainer'
-import { UserText } from '../customcomps/UserText'
+import { Card } from '../predefcomps/Card'
+import { Container } from '../predefcomps/Container'
+import { Text } from '../predefcomps/Text'
 
 const globalStateDict = atom({})
 
@@ -47,9 +46,9 @@ export const useCustomComponentStore = () => {
             setTimeout(() => {
                 // Return actual React components - this simulates CDN imports
                 resolve({
-                    UserCard: UserCard,
-                    UserContainer: UserContainer,
-                    UserText: UserText
+                    Card: Card,
+                    Container: Container,
+                    Text: Text
                 })
             }, 1000)
         })

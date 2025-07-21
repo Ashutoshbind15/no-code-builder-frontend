@@ -47,7 +47,7 @@ export const customStarterState = {
                 children: [
                     {
                         id: "main-content-card",
-                        type: "predef:UserCard",
+                        type: "predef:Card",
                         // we dont add state and effects here cause they are userdef comps, but editing state and effects per comp is available
                         props: [{
                             name: "title",
@@ -67,7 +67,7 @@ export const customStarterState = {
                         }]
                     }, {
                         id: "main-content-container",
-                        type: "predef:UserContainer",
+                        type: "predef:Container",
                         props: [{
                             name: "className",
                             value: "bg-blue-500"
@@ -98,7 +98,7 @@ export const customStarterState = {
                                         },
                                         {
                                             id: "random-text",
-                                            type: "predef:UserText",
+                                            type: "predef:Text",
                                             props: [{
                                                 name: "className",
                                                 value: "text-sm text-gray-500"
@@ -122,13 +122,17 @@ export const customStarterState = {
 }
 
 export const customComponentsMetadata = {
-    "UserCard": {
+    "Card": {
         takesChildren: false,
     },
-    "UserContainer": {
+    "Container": {
         takesChildren: true
     },
-    "UserText": {
+    "Text": {
         takesChildren: false
     },
+}
+
+export const userDefComps = {
+
 }
