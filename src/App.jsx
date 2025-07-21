@@ -1,19 +1,18 @@
-import { useStateStore } from "./comptree/statestore"
-import { Renderer } from "./comptree/renderer"
-import { starterState, testState } from "./comptree/state"
+import { useStateStore, useCustomComponentStore } from "./comptree/statestore"
+import { customStarterState } from "./comptree/customstate"
 import { useState } from "react"
+import { CustomRenderer } from "./comptree/customrenderer"
 
 function App() {
 
   const { setState } = useStateStore()
-
-  const [treeState, setTreeState] = useState(starterState)
+  const [treeState, _] = useState(customStarterState)
+  const { isLoading } = useCustomComponentStore()
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <Renderer node={treeState.root} />
+      {isLoading ? <div>Loading...</div> : <CustomRenderer node={treeState.root} />}
       <button onClick={() => setState("ctrval", 1)}>Initiate the ctr State</button>
-      <button onClick={() => setTreeState(testState)}>Change state test</button>
     </div>
   )
 }

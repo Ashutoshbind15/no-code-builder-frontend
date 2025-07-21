@@ -9,14 +9,6 @@ const higherOrderEffectCreator = (effectCreatorProps) => {
     }
 }
 
-const EffectWrapper = ({ dependencies, effectCreatorProps }) => {
-    useEffect(() => {
-        higherOrderEffectCreator(effectCreatorProps)
-    }, [
-        ...dependencies,
-    ])
-}
-
 const isUserDefElement = (node) => {
     if (node.type.startsWith('userdef:')) {
         return true;
@@ -41,9 +33,8 @@ const higherOrderActionCreator = (action, setState, getState) => {
     }
 }
 
-
 // todo: also account for the default values
-const resolveProps = (props, parentProps, node, getState, setState) => {
+const resolveProps = (props, parentProps, getState) => {
 
     const res = {}
 
@@ -70,22 +61,22 @@ const resolveProps = (props, parentProps, node, getState, setState) => {
     return res;
 }
 
+const getActionProps = (actions, setState, getState) => {
+    const res = {}
+    if (!actions) {
+        return res;
+    }
+    for (let action of actions) {
+        if (action.trigger === "onClick") {
+            res["onClick"] = higherOrderActionCreator(action, setState, getState)
+        }
+    }
+    return res;
+}
+
 // todo: track ids
 export const Renderer = ({ node, props }) => {
-
-    // if (node.effects.length > 0) {
-    //     return (
-    //         <EffectWrapper dependencies={node.effects} effectCreatorProps={node.effects} >
-    //             {/* implement/copy the render logic in here */}
-    //         </EffectWrapper>
-    //     )
-    // }
-
     const { getState, setState } = useStateStore()
-    const ctrState = getState("ctrval")
-
-    // console.log("current node", node)
-    // console.log("current props", props)
 
     if (node.type === "stringLiteral") {
         return <>
@@ -97,21 +88,12 @@ export const Renderer = ({ node, props }) => {
 
     if (!isUserDefElement(node)) {
 
-        const extraProps = {}
-
-        if (node.actions?.length > 0) {
-            // console.log("node.actions", node.actions)
-            for (let action of node.actions) {
-                if (action.trigger === "onClick") {
-                    extraProps["onClick"] = higherOrderActionCreator(action, setState, getState)
-                }
-            }
-        }
+        const extraProps = getActionProps(node.actions, setState, getState)
 
         jsx = (
             <node.type {...props} {...extraProps}>
                 {node.children && node.children.map((child) => (
-                    <Renderer key={child.id} node={child} props={resolveProps(child.props, props, child, getState, setState)} />
+                    <Renderer key={child.id} node={child} props={resolveProps(child.props, props, getState)} />
                 ))}
             </node.type>
         )
@@ -120,14 +102,11 @@ export const Renderer = ({ node, props }) => {
         const customNodeMetadata = userDefComps[customNodeType]
         const customNodeBody = customNodeMetadata.body
 
-        // console.log("custom node metadata", customNodeMetadata)
-        // console.log("custom node body", customNodeBody)
-
         if (!customNodeMetadata.takesChildren) {
             jsx = (
                 <>
                     {customNodeBody.map((bodyNode) => (
-                        <Renderer key={bodyNode.id} node={bodyNode} props={resolveProps(bodyNode.props, props, bodyNode, getState, setState)} />
+                        <Renderer key={bodyNode.id} node={bodyNode} props={resolveProps(bodyNode.props, props, getState)} />
                     ))}
                 </>
             )
@@ -139,13 +118,13 @@ export const Renderer = ({ node, props }) => {
                             return (
                                 <>
                                     {node.children.map((child) => (
-                                        <Renderer key={child.id} node={child} props={resolveProps(child.props, props, child, getState, setState)} />
+                                        <Renderer key={child.id} node={child} props={resolveProps(child.props, props, getState)} />
                                     ))}
                                 </>
                             )
                         } else {
                             return (
-                                <Renderer key={bodyNode.id} node={bodyNode} props={resolveProps(bodyNode.props, props, bodyNode, getState, setState)} />
+                                <Renderer key={bodyNode.id} node={bodyNode} props={resolveProps(bodyNode.props, props, getState)} />
                             )
                         }
                     })}
@@ -163,7 +142,6 @@ export const Renderer = ({ node, props }) => {
             </TmpEffectWrapper>
         )
     }
-
 
     return jsx;
 }
