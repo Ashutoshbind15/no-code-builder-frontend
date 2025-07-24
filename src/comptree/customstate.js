@@ -58,12 +58,6 @@ export const customStarterState = {
                         }, {
                             name: "image1",
                             value: "https://example.com/images/150"
-                        }, {
-                            name: "image2",
-                            value: "https://example.com/images/150"
-                        }, {
-                            name: "image3",
-                            value: "https://example.com/images/150"
                         }]
                     }, {
                         id: "main-content-container",
@@ -115,6 +109,29 @@ export const customStarterState = {
                         ]
                     }
                 ]
+            }, {
+                id: "section-aside",
+                type: "userdef:Section",
+                props: [{
+                    name: "title",
+                    value: "section title"
+                }],
+                children: [{
+                    id: "section-aside-blankspace",
+                    type: "h1",
+                    props: [{
+                        name: "text",
+                        value: "inserted child"
+                    }],
+                    children: [{
+                        id: "section-aside-blankspace-text",
+                        type: "stringLiteral",
+                        props: [{
+                            name: "text",
+                            value: "prop:text"
+                        }]
+                    }]
+                }]
             }
         ]
 
@@ -133,6 +150,40 @@ export const customComponentsMetadata = {
     },
 }
 
+// the user comps that take children help them build layouts
 export const userDefComps = {
-
+    "Section": {
+        type: "div",
+        takesChildren: true,
+        props: [{
+            name: "className",
+            defaultValue: "bg-blue-500"
+        }, {
+            name: "title",
+            defaultValue: "Hello"
+        }],
+        body: [{
+            id: "userseccard",
+            type: "predef:Card",
+            props: [{
+                name: "title",
+                value: "prop:title"
+            }, {
+                name: "description",
+                value: "section description"
+            }, {
+                name: "image1",
+                value: "https://example.com/images/150"
+            }]
+        }, {
+            id: "usersecaside",
+            type: "div",
+            props: [],
+            children: [{
+                id: "usersecaside-blankspace",
+                type: "children",
+                props: []
+            }]
+        }]
+    }
 }
