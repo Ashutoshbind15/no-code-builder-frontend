@@ -6,6 +6,7 @@ import { Text } from '../predefcomps/Text'
 
 const globalStateDict = atom({})
 
+
 // Global loading state atom for component store
 export const componentStoreLoadingAtom = atom(true)
 
@@ -29,6 +30,26 @@ export const useStateStore = () => {
         getState,
         setState,
         getStateDict
+    }
+}
+
+const globalPropMappingDict = atom({})
+
+export const usePropMappingStore = () => {
+    const propMapping = useAtomValue(globalPropMappingDict)
+    const setPropMappingAtom = useSetAtom(globalPropMappingDict)
+
+    const getPropMapping = (nodeid, propName) => {
+        return propMapping[nodeid][propName]
+    }
+
+    const setPropMapping = (nodeid, propName, propValue) => {
+        setPropMappingAtom((prevMapping) => ({ ...prevMapping, [nodeid]: { ...prevMapping[nodeid], [propName]: propValue } }))
+    }
+
+    return {
+        getPropMapping,
+        setPropMapping
     }
 }
 

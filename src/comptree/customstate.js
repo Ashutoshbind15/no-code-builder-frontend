@@ -114,15 +114,41 @@ export const customStarterState = {
                 props: [{
                     name: "title",
                     value: "section title"
+                }, {
+                    name: "className",
+                    value: "bg-blue-500"
                 }],
-                children: [{
-                    id: "section-aside-blankspace-text",
-                    type: "predef:Text",
-                    props: [{
-                        name: "text",
-                        value: "prop:section-aside:title"
-                    }]
-                }],
+                children: [
+
+                    {
+                        type: "predef:Card",
+                        props: [{
+                            name: "title",
+                            value: "prop:section-aside:title"
+                        }, {
+                            name: "description",
+                            value: "section description"
+                        }, {
+                            name: "image1",
+                            value: "https://example.com/images/150"
+                        }],
+                    },
+                    {
+                        id: "section-aside-blankspace",
+                        type: "div",
+                        props: [],
+                        children: [
+                            {
+                                id: "section-aside-blankspace-text",
+                                type: "predef:Text",
+                                props: [{
+                                    name: "text",
+                                    value: "prop:section-aside:title"
+                                }]
+                            }
+                        ]
+                    },
+                ],
                 state: [],
                 actions: [],
                 effects: []
@@ -174,8 +200,11 @@ export const customComponentsMetadata = {
 // the user comps that take children help them build layouts
 export const userDefComps = {
     "Section": {
+
         type: "div",
-        takesChildren: true,
+
+        // for now, we'll not allow children for all userdef comps
+        // takesChildren: true,
         // means we can add elements to the body array
         props: [{
             name: "className",
@@ -227,7 +256,7 @@ export const userDefComps = {
     },
     "PageDiv": {
         type: "div",
-        takesChildren: true,
+        // takesChildren: true,
         state: [],
         props: [],
         children: [],
@@ -248,3 +277,5 @@ export const userDefComps = {
 // title -> id: abx, prop: props:xyz:cardtitle
 
 // also take care that the nesting could be well inside, so even the n+2th child should be able to track the nearest {dyn-parent-assigned-id}
+
+// now only the renderer recursive func, would take the f(nodestructure), and the node props will be resolved from the state tree, and id tracking/resolution of parents in some way
