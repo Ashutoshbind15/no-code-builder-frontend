@@ -4,6 +4,8 @@ Have implemented a basic rendering system for html as well as user-defined nodes
 
 It now supports state management and effects.
 
+The static renderer and ast structure look stable and extensible now, with a sample ast structure as init to the state, can be used to get an idea of types, till I add types in here...
+
 ## Todos:
 
 - [ ] Better id tracking
