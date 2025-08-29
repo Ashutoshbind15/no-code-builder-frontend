@@ -1,5 +1,7 @@
 // todo: also add a droppable prop
 
+import { addNodeToParent, findAndRemoveNode } from "../static/components/simpletreemutators"
+
 const DraggableNodeWrapper = ({ nodeId, treeState, setTreeState, children, canTakeChildren, isDraggable = true }) => {
 
     const handleDragStart = (e) => {

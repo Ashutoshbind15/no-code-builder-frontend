@@ -1,11 +1,11 @@
 import React from "react"
-import { Card } from "../predefcomps/Card"
-import { Container } from "../predefcomps/Container"
-import { Text } from "../predefcomps/Text"
-import { literalValuesSampleState, treeSampleEvalState } from "./simplestate"
+import { Card } from "../../predefcomps/Card"
+import { Container } from "../../predefcomps/Container"
+import { Text } from "../../predefcomps/Text"
+import PageWrapper from "../../predefcomps/PageWrapper"
 
-const resolveProps = (nodeId) => {
-    const nodeEvalState = treeSampleEvalState[nodeId]
+const resolveProps = (nodeId, evalsState) => {
+    const nodeEvalState = evalsState[nodeId]
     if (!nodeEvalState) {
         // wont have for literals
         return {}
@@ -18,22 +18,24 @@ const htmlomponentsThatCanTakeChildren = ["div", "main", "section", "article", "
 const customNamesToComponentRegistry = {
     "Card": Card,
     "Container": Container,
-    "Text": Text
+    "Text": Text,
+    "PageWrapper": PageWrapper
 }
 
 const customComponentToTakesChildrenMapping = {
     "Card": false,
     "Container": true,
-    "Text": false
+    "Text": false,
+    "PageWrapper": true
 }
 
 // For now we using the React.createElement approach, 
 // consider the cutomrenderernew, for other impl, if we somehow dont want
 // to use the React.createElement approach
 
-const SimpleRenderer = ({ node }) => {
+const SimpleRenderer = ({ node, evalsState, literalValues }) => {
     const nodeId = node.id;
-    const nodeProps = resolveProps(nodeId)
+    const nodeProps = resolveProps(nodeId, evalsState)
     const isCustomComponent = node.id.startsWith("p:")
 
     if (!isCustomComponent) {
@@ -45,7 +47,7 @@ const SimpleRenderer = ({ node }) => {
                 nodeType,
                 nodeProps,
                 node.children.map((child) => (
-                    <SimpleRenderer key={child.id} node={child} />
+                    <SimpleRenderer key={child.id} node={child} evalsState={evalsState} literalValues={literalValues} />
                 ))
             )
         } else {
@@ -57,7 +59,7 @@ const SimpleRenderer = ({ node }) => {
         const isLiteral = nodeId.startsWith("p:Literal:")
 
         if (isLiteral) {
-            return <>{literalValuesSampleState[nodeId]}</>
+            return <>{literalValues[nodeId]}</>
         }
 
         if (!CustomComponent) {
@@ -68,7 +70,7 @@ const SimpleRenderer = ({ node }) => {
         if (takesChildren) {
             return <CustomComponent {...nodeProps}>
                 {node.children.map((child) => (
-                    <SimpleRenderer key={child.id} node={child} />
+                    <SimpleRenderer key={child.id} node={child} evalsState={evalsState} literalValues={literalValues} />
                 ))}
             </CustomComponent>
         } else {

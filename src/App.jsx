@@ -1,17 +1,11 @@
-import { useState } from "react"
-import { treeSampleState } from "./comptree/simplestate"
-import DnDRenderer from "./comptree/dndrenderer"
+import EditorStatic from "./pages/EditorStatic"
+
 
 function App() {
-  const [treeState, setTreeState] = useState(treeSampleState)
 
   return (
     <>
-      <DnDRenderer
-        node={treeState}
-        treeState={treeState}
-        setTreeState={setTreeState}
-      />
+      <EditorStatic />
     </>
   )
 }

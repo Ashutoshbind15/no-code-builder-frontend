@@ -1,8 +1,8 @@
-import React, { useState } from "react"
+import React from "react"
 import { Card } from "../predefcomps/Card"
 import { Container } from "../predefcomps/Container"
 import { Text } from "../predefcomps/Text"
-import { literalValuesSampleState, treeSampleEvalState } from "./simplestate"
+import { literalValuesSampleState, treeSampleEvalState } from "../static/components/simplestate"
 import DraggableNodeWrapper from "./DraggableNodeWrapper"
 
 const resolveProps = (nodeId) => {
