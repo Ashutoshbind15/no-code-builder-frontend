@@ -7,5 +7,5 @@ It now supports state management and effects.
 ## Todos:
 
 - [ ] Better id tracking
-- [ ] basic tree manipulation
-- [ ] Add/Wrap the nodes with dnd logic
+- [x] basic tree manipulation
+- [x] Add/Wrap the nodes with dnd logic
