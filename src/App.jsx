@@ -1,9 +1,10 @@
+import { treeSampleState } from "./comptree/simplestate"
+import SimpleRenderer from "./comptree/simplestaterenderer"
+
 function App() {
 
   return <>
-    <p>
-      wsbuilder demo
-    </p>
+    <SimpleRenderer node={treeSampleState} />
   </>
 }
 
