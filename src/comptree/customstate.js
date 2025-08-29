@@ -279,3 +279,9 @@ export const userDefComps = {
 // also take care that the nesting could be well inside, so even the n+2th child should be able to track the nearest {dyn-parent-assigned-id}
 
 // now only the renderer recursive func, would take the f(nodestructure), and the node props will be resolved from the state tree, and id tracking/resolution of parents in some way
+
+// better would be to just separate the two, the structure state from the prop state...
+
+// only for copy pasta the component subtrees or while deffining the user def comps,
+//  do we need to have meta-references, cause we don't have the ids of the parent components, for the child comps to refer 
+// for dependent props or states
