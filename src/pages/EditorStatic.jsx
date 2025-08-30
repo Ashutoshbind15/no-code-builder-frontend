@@ -1,17 +1,27 @@
 import { useState } from "react"
 import Sidebar from "../static/components/Sidebar"
+import EditBar from "../static/components/EditBar"
 import SimpleRenderer from "../static/components/simplestaterenderer"
 
 const starterStructure = {
     id: "p:PageWrapper:0",
     children: [{
         id: "p:Literal:0.1",
+    }, {
+        id: "p:Card:0.2",
     }]
 }
 
 const starterNodeEvals = {
     "p:PageWrapper:0": {
         props: {}
+    },
+    "p:Card:0.2": {
+        props: {
+            title: "Hello, World!",
+            description: "This is a description",
+            image1: "https://images.example.com/150"
+        }
     }
 }
 
@@ -40,14 +50,64 @@ const EditorStatic = () => {
     const [treeState, setTreeState] = useState(starterStructure)
     const [nodeEvals, setNodeEvals] = useState(starterNodeEvals)
     const [literalValues, setLiteralValues] = useState(starterLiteralValues)
+    const [selectedElement, setSelectedElement] = useState(null)
+
+    // Handler for selecting elements
+    const handleSelectElement = (elementId) => {
+        setSelectedElement(elementId)
+    }
+
+    // Handler for closing the edit bar
+    const handleCloseEditBar = () => {
+        setSelectedElement(null)
+    }
+
+    // todo: [mid] to make the state global maybe
+
+    // Handler for prop changes
+    const handlePropChange = (nodeId, propKey, propValue) => {
+        setNodeEvals(prev => ({
+            ...prev,
+            [nodeId]: {
+                ...prev[nodeId],
+                props: {
+                    ...prev[nodeId]?.props,
+                    [propKey]: propValue
+                }
+            }
+        }))
+    }
+
+    // Handler for literal value changes
+    const handleLiteralChange = (nodeId, value) => {
+        setLiteralValues(prev => ({
+            ...prev,
+            [nodeId]: value
+        }))
+    }
 
 
     return (
         <div className="flex w-full">
-            <Sidebar />
-            <div className="w-3/4 bg-blue-500 p-4">
+            <Sidebar
+                treeState={treeState}
+                setTreeState={setTreeState}
+                selectedElement={selectedElement}
+                onSelectElement={handleSelectElement}
+                setEvalsState={setNodeEvals}
+                setLiteralValues={setLiteralValues}
+            />
+            <div className="w-2/4 bg-blue-500 p-4">
                 <SimpleRenderer node={treeState} evalsState={nodeEvals} literalValues={literalValues} />
             </div>
+            <EditBar
+                selectedElement={selectedElement}
+                nodeEvals={nodeEvals}
+                literalValues={literalValues}
+                onClose={handleCloseEditBar}
+                onPropChange={handlePropChange}
+                onLiteralChange={handleLiteralChange}
+            />
         </div>
     )
 }
