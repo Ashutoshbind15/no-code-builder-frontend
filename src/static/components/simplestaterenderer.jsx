@@ -4,60 +4,39 @@ import { componentTakesChildren, customNamesToComponentRegistry } from "../../pr
 const resolveProps = (nodeId, evalsState) => {
     const nodeEvalState = evalsState[nodeId]
     if (!nodeEvalState) {
-        // wont have for literals
         return {}
     }
     return nodeEvalState.props
 }
 
-// For now we using the React.createElement approach, 
-// consider the cutomrenderernew, for other impl, if we somehow dont want
-// to use the React.createElement approach
+// Simplified renderer for custom components only
 
-const SimpleRenderer = ({ node, evalsState, literalValues }) => {
-    const nodeId = node.id;
-    const nodeProps = resolveProps(nodeId, evalsState)
-    const isCustomComponent = node.id.startsWith("p:")
+const SimpleRenderer = ({ node, evalsState }) => {
+    const nodeId = node.id
+    const categorizedProps = resolveProps(nodeId, evalsState)
 
-    if (!isCustomComponent) {
-        const nodeType = nodeId.split(":")[0]
-        const takesChildren = componentTakesChildren(nodeType)
+    // Extract component type from nodeId (format: "ComponentType:id")
+    const customNodeType = nodeId.split(":")[0]
+    const CustomComponent = customNamesToComponentRegistry[customNodeType]
 
-        if (takesChildren) {
-            return React.createElement(
-                nodeType,
-                nodeProps,
-                node.children.map((child) => (
-                    <SimpleRenderer key={child.id} node={child} evalsState={evalsState} literalValues={literalValues} />
-                ))
-            )
-        } else {
-            return React.createElement(nodeType, nodeProps)
-        }
-    } else {
-        const customNodeType = nodeId.split(":")[1]
-        const CustomComponent = customNamesToComponentRegistry[customNodeType]
-        const isLiteral = nodeId.startsWith("p:Literal:")
+    if (!CustomComponent) {
+        console.warn(`Custom component not found: ${customNodeType}`)
+        return null
+    }
 
-        if (isLiteral) {
-            return <>{literalValues[nodeId]}</>
-        }
+    const takesChildren = componentTakesChildren(customNodeType)
 
-        if (!CustomComponent) {
-            return null
-        }
-
-        const takesChildren = componentTakesChildren(customNodeType)
-        if (takesChildren) {
-            return <CustomComponent {...nodeProps}>
-                {node.children.map((child) => (
-                    <SimpleRenderer key={child.id} node={child} evalsState={evalsState} literalValues={literalValues} />
+    // Spread the categorized props directly (e.g., content={...}, containerStyles={...})
+    if (takesChildren) {
+        return (
+            <CustomComponent {...categorizedProps}>
+                {node.children?.map((child) => (
+                    <SimpleRenderer key={child.id} node={child} evalsState={evalsState} />
                 ))}
             </CustomComponent>
-        } else {
-            return <CustomComponent {...nodeProps} />
-        }
-
+        )
+    } else {
+        return <CustomComponent {...categorizedProps} />
     }
 }
 

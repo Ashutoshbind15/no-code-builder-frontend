@@ -20,7 +20,8 @@ export const Card = ({ content = {}, containerStyles = {} }) => {
         margin: containerStyles.margin ?? defaults.containerStyles?.margin,
         boxShadow: containerStyles.boxShadow ?? defaults.containerStyles?.boxShadow,
         border: containerStyles.border ?? defaults.containerStyles?.border,
-        ...containerStyles // Allow any additional styles to override
+        opacity: containerStyles.opacity ?? defaults.containerStyles?.opacity,
+        display: (containerStyles.visible ?? defaults.containerStyles?.visible) ? 'block' : 'none',
     }
 
     return (

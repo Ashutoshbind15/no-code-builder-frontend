@@ -1,54 +1,28 @@
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DialogClose } from '../../components/ui/dialog';
-import { getCategorizedDefaultProps, getDefaultsForHtmlElements } from '../../predefcomps/metadata';
+import { getCategorizedDefaultProps } from '../../predefcomps/metadata';
 
 const customComponents = ["Card", "Text", "Container", "PageWrapper"]
-const htmlElements = ["div", "button", "span", "p", "h1", "h2", "h3"]
 
-const AddElementForm = ({ parentNodeId, setEvalsState, setLiteralValues, setTreeState }) => {
+const AddElementForm = ({ parentNodeId, setEvalsState, setTreeState }) => {
     const [selectedNodeType, setSelectedNodeType] = useState("Card")
 
     const handleAddElement = () => {
-        const isCustomComponent = customComponents.includes(selectedNodeType)
         const id = uuidv4()
+        const nodeId = `${selectedNodeType}:${id}`
 
-        // Create the node ID based on the type
-        let nodeId;
-        if (isCustomComponent || selectedNodeType === "Literal") {
-            nodeId = `p:${selectedNodeType}:${id}`
-        } else {
-            nodeId = `${selectedNodeType}:${id}`
-        }
-
-        // populate the evals and literals state
-        if (isCustomComponent) {
-            const componentProps = getCategorizedDefaultProps(selectedNodeType)
-            setEvalsState(prev => ({
-                ...prev,
-                [nodeId]: {
-                    props: componentProps
-                }
-            }))
-        } else if (selectedNodeType === "Literal") {
-            setLiteralValues(prev => ({
-                ...prev,
-                [nodeId]: "Hello, World!"
-            }))
-        } else {
-            // HTML elements - use flat default props
-            const htmlDefaults = getDefaultsForHtmlElements(selectedNodeType)
-            setEvalsState(prev => ({
-                ...prev,
-                [nodeId]: {
-                    props: htmlDefaults
-                }
-            }))
-        }
+        // All components are custom components - get categorized props
+        const componentProps = getCategorizedDefaultProps(selectedNodeType)
+        setEvalsState(prev => ({
+            ...prev,
+            [nodeId]: {
+                props: componentProps
+            }
+        }))
 
         // Add to the tree state
-        // todo: [mid], not sure if I like this, feels repetitive, find a way to use the 
-        // common tree manipulation utils...
+        // todo: [mid], use some common utils
         setTreeState(prev => {
             const addNodeToTree = (node) => {
                 if (node.id === parentNodeId) {
@@ -85,19 +59,9 @@ const AddElementForm = ({ parentNodeId, setEvalsState, setLiteralValues, setTree
                     onChange={(e) => setSelectedNodeType(e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
-                    <optgroup label="Custom Components">
-                        {customComponents.map(type => (
-                            <option key={type} value={type}>{type}</option>
-                        ))}
-                    </optgroup>
-                    <optgroup label="Content">
-                        <option value="Literal">Literal (Text)</option>
-                    </optgroup>
-                    <optgroup label="HTML Elements">
-                        {htmlElements.map(type => (
-                            <option key={type} value={type}>{type}</option>
-                        ))}
-                    </optgroup>
+                    {customComponents.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                    ))}
                 </select>
             </div>
 

@@ -10,10 +10,22 @@ export const Text = ({ content = {}, styling = {} }) => {
     }
 
     const finalStyling = {
-        className: styling.className ?? defaults.styling?.className
+        className: styling.className ?? defaults.styling?.className,
+        fontSize: styling.fontSize ?? defaults.styling?.fontSize,
+        bold: styling.bold ?? defaults.styling?.bold,
+        italic: styling.italic ?? defaults.styling?.italic
+    }
+
+    // Build dynamic styles
+    const dynamicStyles = {
+        fontSize: `${finalStyling.fontSize}px`,
+        fontWeight: finalStyling.bold ? 'bold' : 'normal',
+        fontStyle: finalStyling.italic ? 'italic' : 'normal'
     }
 
     return (
-        <p id="user-text" className={finalStyling.className}>{finalContent.text}</p>
+        <p id="user-text" className={finalStyling.className} style={dynamicStyles}>
+            {finalContent.text}
+        </p>
     )
 }

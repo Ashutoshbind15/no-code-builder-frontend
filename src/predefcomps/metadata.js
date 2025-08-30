@@ -64,6 +64,10 @@ const propMetadata = {
                 name: "paddingRight",
                 type: "string",
                 defaultValue: null
+            }, {
+                name: "centered",
+                type: "boolean",
+                defaultValue: true
             }]
         },
         {
@@ -122,6 +126,14 @@ const propMetadata = {
                 name: "border",
                 type: "string",
                 defaultValue: "1px solid #e0e0e0"
+            }, {
+                name: "opacity",
+                type: "number",
+                defaultValue: 1
+            }, {
+                name: "visible",
+                type: "boolean",
+                defaultValue: true
             }]
         }
     ],
@@ -140,6 +152,18 @@ const propMetadata = {
                 name: "className",
                 type: "string",
                 defaultValue: "text-sm text-gray-500"
+            }, {
+                name: "fontSize",
+                type: "number",
+                defaultValue: 16
+            }, {
+                name: "bold",
+                type: "boolean",
+                defaultValue: false
+            }, {
+                name: "italic",
+                type: "boolean",
+                defaultValue: false
             }]
         }
     ],
@@ -152,216 +176,15 @@ const propMetadata = {
                 defaultValue: "bg-red-500"
             }]
         }
-    ],
-    // HTML Elements - basic styling props
-    "div": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "main": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "section": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "article": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "header": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "footer": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "aside": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "nav": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "form": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        },
-        {
-            category: "behavior",
-            props: [
-                { name: "action", type: "string", defaultValue: "" },
-                { name: "method", type: "string", defaultValue: "get" }
-            ]
-        }
-    ],
-    "ul": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "ol": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "li": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "table": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "tbody": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "tr": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "td": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "th": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        }
-    ],
-    "button": [
-        {
-            category: "styling",
-            props: [
-                { name: "className", type: "string", defaultValue: "" },
-                { name: "id", type: "string", defaultValue: "" }
-            ]
-        },
-        {
-            category: "behavior",
-            props: [
-                { name: "type", type: "string", defaultValue: "button" },
-                { name: "disabled", type: "boolean", defaultValue: false }
-            ]
-        },
-        {
-            category: "content",
-            props: [
-                { name: "children", type: "string", defaultValue: "Button" }
-            ]
-        }
     ]
 }
 
-// Component children metadata
+// Component children metadata - only custom components
 const componentChildrenMetadata = {
     "PageWrapper": true,
     "Card": false,
     "Text": false,
-    "Container": true,
-    "div": true,
-    "main": true,
-    "section": true,
-    "article": true,
-    "header": true,
-    "footer": true,
-    "aside": true,
-    "nav": true,
-    "form": true,
-    "ul": true,
-    "ol": true,
-    "li": true,
-    "table": true,
-    "tbody": true,
-    "tr": true,
-    "td": true,
-    "th": true,
-    "button": true
+    "Container": true
 }
 
 export const customNamesToComponentRegistry = {
@@ -371,23 +194,9 @@ export const customNamesToComponentRegistry = {
     "PageWrapper": PageWrapper
 }
 
-// Helper function to get flat default props for HTML elements
-export const getDefaultsForHtmlElements = (elementName) => {
-    const metadata = propMetadata[elementName]
-    if (!metadata) return {}
 
-    const flatDefaults = {}
-    metadata.forEach(category => {
-        if (category.props) {
-            category.props.forEach(prop => {
-                flatDefaults[prop.name] = prop.defaultValue
-            })
-        }
-    })
-    return flatDefaults
-}
 
-// Helper function to check if a component is a custom component (non-HTML)
+// All components are now custom components
 export const isCustomComponent = (componentName) => {
     return ['Card', 'Container', 'Text', 'PageWrapper'].includes(componentName)
 }

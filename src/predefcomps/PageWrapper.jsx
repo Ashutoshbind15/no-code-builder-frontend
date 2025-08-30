@@ -22,7 +22,8 @@ const PageWrapper = ({ children, background = {}, layout = {}, spacing = {} }) =
         paddingTop: layout.paddingTop ?? defaults.layout?.paddingTop,
         paddingBottom: layout.paddingBottom ?? defaults.layout?.paddingBottom,
         paddingLeft: layout.paddingLeft ?? defaults.layout?.paddingLeft,
-        paddingRight: layout.paddingRight ?? defaults.layout?.paddingRight
+        paddingRight: layout.paddingRight ?? defaults.layout?.paddingRight,
+        centered: layout.centered ?? defaults.layout?.centered
     };
 
     const finalSpacing = {
@@ -85,7 +86,7 @@ const PageWrapper = ({ children, background = {}, layout = {}, spacing = {} }) =
     const innerContainerStyles = {
         maxWidth: processSize(finalLayout.maxWidth),
         width: '100%',
-        margin: '0 auto',
+        margin: finalLayout.centered ? '0 auto' : '0',
         ...getPaddingStyle(),
     };
 

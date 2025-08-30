@@ -2,7 +2,7 @@ import React from "react"
 import { Card } from "../predefcomps/Card"
 import { Container } from "../predefcomps/Container"
 import { Text } from "../predefcomps/Text"
-import { literalValuesSampleState, treeSampleEvalState } from "../static/components/simplestate"
+import { treeSampleEvalState } from "../static/components/simplestate"
 import DraggableNodeWrapper from "./DraggableNodeWrapper"
 
 const resolveProps = (nodeId) => {
@@ -13,9 +13,7 @@ const resolveProps = (nodeId) => {
     return nodeEvalState.props
 }
 
-const htmlComponentsThatCanTakeChildren = ["div", "main", "section", "article",
-    "header", "footer", "aside", "nav", "form", "ul", "ol",
-    "li", "table", "tbody", "tr", "td", "th", "button"]
+
 
 const customNamesToComponentRegistry = {
     "Card": Card,
@@ -30,57 +28,36 @@ const customComponentToTakesChildrenMapping = {
 }
 
 const canTakeChildren = (nodeId) => {
-    const isCustomComponent = nodeId.startsWith("p:")
-    if (!isCustomComponent) {
-        const nodeType = nodeId.split(":")[0]
-        return htmlComponentsThatCanTakeChildren.includes(nodeType)
-    } else {
-        const customNodeType = nodeId.split(":")[1]
-        return customComponentToTakesChildrenMapping[customNodeType] || false
-    }
+    // All components are now custom components (format: "ComponentType:id")
+    const customNodeType = nodeId.split(":")[0]
+    return customComponentToTakesChildrenMapping[customNodeType] || false
 }
 
 const DnDRenderer = ({ node, treeState, setTreeState }) => {
     const nodeId = node.id
-    const nodeProps = resolveProps(nodeId)
-    const isCustomComponent = nodeId.startsWith("p:")
+    const categorizedProps = resolveProps(nodeId)
     const takesChildren = canTakeChildren(nodeId)
+
+    // Extract component type from nodeId (format: "ComponentType:id")
+    const customNodeType = nodeId.split(":")[0]
+    const CustomComponent = customNamesToComponentRegistry[customNodeType]
     let renderedComponent
 
-    if (!isCustomComponent) {
-        const nodeType = nodeId.split(":")[0]
-
+    if (CustomComponent) {
         if (takesChildren) {
-            renderedComponent = React.createElement(
-                nodeType,
-                nodeProps,
-                node.children?.map((child) => (
-                    <DnDRenderer key={child.id} node={child} treeState={treeState} setTreeState={setTreeState} />
-                ))
-            )
-        } else {
-            renderedComponent = React.createElement(nodeType, nodeProps)
-        }
-    } else {
-        const customNodeType = nodeId.split(":")[1]
-        const CustomComponent = customNamesToComponentRegistry[customNodeType]
-        const isLiteral = nodeId.startsWith("p:Literal:")
-
-        if (isLiteral) {
-            renderedComponent = <>{literalValuesSampleState[nodeId]}</>
-        } else if (CustomComponent) {
-            if (takesChildren) {
-                renderedComponent = <CustomComponent {...nodeProps}>
+            renderedComponent = (
+                <CustomComponent {...categorizedProps}>
                     {node.children?.map((child) => (
                         <DnDRenderer key={child.id} node={child} treeState={treeState} setTreeState={setTreeState} />
                     ))}
                 </CustomComponent>
-            } else {
-                renderedComponent = <CustomComponent {...nodeProps} />
-            }
+            )
         } else {
-            renderedComponent = null
+            renderedComponent = <CustomComponent {...categorizedProps} />
         }
+    } else {
+        console.warn(`Custom component not found: ${customNodeType}`)
+        renderedComponent = null
     }
 
     // Wrap in draggable container

@@ -4,16 +4,11 @@ import AddElementDialog from './AddElementDialog'
 
 // Helper function to generate friendly names from node IDs
 const generateFriendlyName = (id) => {
-    // Extract the component type and number from the ID
-    // Examples: "div:0" -> "div0", "p:Card:2.1" -> "Card2.1", "button:1.1" -> "button1.1"
+    // Format is now "ComponentType:id"
     const parts = id.split(':')
 
     if (parts.length === 2) {
-        // Standard HTML elements like "div:0", "button:1.1"
         return `${parts[0]}${parts[1]}`
-    } else if (parts.length === 3 && parts[0] === 'p') {
-        // Custom components like "p:Card:2.1", "p:Literal:1.1.1"
-        return `${parts[1]}${parts[2]}`
     }
 
     // Fallback to the original ID
@@ -21,7 +16,7 @@ const generateFriendlyName = (id) => {
 }
 
 // Tree item component
-const TreeItem = ({ node, depth = 0, selectedElement, onSelectElement, setTreeState, setEvalsState, setLiteralValues }) => {
+const TreeItem = ({ node, depth = 0, selectedElement, onSelectElement, setTreeState, setEvalsState }) => {
     const friendlyName = generateFriendlyName(node.id)
     const indentStyle = { paddingLeft: `${depth * 20}px` }
     const isSelected = selectedElement === node.id
@@ -48,7 +43,6 @@ const TreeItem = ({ node, depth = 0, selectedElement, onSelectElement, setTreeSt
                     <AddElementDialog
                         parentNodeId={node.id}
                         setEvalsState={setEvalsState}
-                        setLiteralValues={setLiteralValues}
                         setTreeState={setTreeState}
                     >
                         <button
@@ -77,7 +71,6 @@ const TreeItem = ({ node, depth = 0, selectedElement, onSelectElement, setTreeSt
                     onSelectElement={onSelectElement}
                     setTreeState={setTreeState}
                     setEvalsState={setEvalsState}
-                    setLiteralValues={setLiteralValues}
                 />
             ))}
         </div>
@@ -85,7 +78,7 @@ const TreeItem = ({ node, depth = 0, selectedElement, onSelectElement, setTreeSt
 }
 
 // File tree view component
-const FileTreeView = ({ treeState, selectedElement, onSelectElement, setTreeState, setEvalsState, setLiteralValues }) => {
+const FileTreeView = ({ treeState, selectedElement, onSelectElement, setTreeState, setEvalsState }) => {
     if (!treeState) {
         return <div className="p-4 text-gray-500">No tree data available</div>
     }
@@ -102,14 +95,13 @@ const FileTreeView = ({ treeState, selectedElement, onSelectElement, setTreeStat
                     onSelectElement={onSelectElement}
                     setTreeState={setTreeState}
                     setEvalsState={setEvalsState}
-                    setLiteralValues={setLiteralValues}
                 />
             </div>
         </div>
     )
 }
 
-const Sidebar = ({ treeState, selectedElement, onSelectElement, setTreeState, setEvalsState, setLiteralValues }) => {
+const Sidebar = ({ treeState, selectedElement, onSelectElement, setTreeState, setEvalsState }) => {
     return (
         <div className="w-1/4 bg-white border-r border-gray-300 overflow-y-auto">
             <div className="p-4">
@@ -120,7 +112,6 @@ const Sidebar = ({ treeState, selectedElement, onSelectElement, setTreeState, se
                     onSelectElement={onSelectElement}
                     setTreeState={setTreeState}
                     setEvalsState={setEvalsState}
-                    setLiteralValues={setLiteralValues}
                 />
             </div>
         </div>
