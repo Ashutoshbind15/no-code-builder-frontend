@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { useSetAtom } from 'jotai';
 import { v4 as uuidv4 } from 'uuid';
 import { DialogClose } from '../../components/ui/dialog';
 import { getCategorizedDefaultProps } from '../../predefcomps/metadata';
+import { addNodeAtom } from '../atoms';
 
 const customComponents = ["Card", "Text", "Container", "PageWrapper"]
 
-const AddElementForm = ({ parentNodeId, setEvalsState, setTreeState }) => {
+const AddElementForm = ({ parentNodeId }) => {
     const [selectedNodeType, setSelectedNodeType] = useState("Card")
+    const addNode = useSetAtom(addNodeAtom)
 
     const handleAddElement = () => {
         const id = uuidv4()
@@ -14,35 +17,13 @@ const AddElementForm = ({ parentNodeId, setEvalsState, setTreeState }) => {
 
         // All components are custom components - get categorized props
         const componentProps = getCategorizedDefaultProps(selectedNodeType)
-        setEvalsState(prev => ({
-            ...prev,
-            [nodeId]: {
-                props: componentProps
-            }
-        }))
 
-        // Add to the tree state
-        // todo: [mid], use some common utils
-        setTreeState(prev => {
-            const addNodeToTree = (node) => {
-                if (node.id === parentNodeId) {
-                    return {
-                        ...node,
-                        children: [
-                            ...(node.children || []),
-                            { id: nodeId, children: [] }
-                        ]
-                    }
-                }
-                if (node.children) {
-                    return {
-                        ...node,
-                        children: node.children.map(addNodeToTree)
-                    }
-                }
-                return node
-            }
-            return addNodeToTree(prev)
+        // Add the node using the atom
+        addNode({
+            parentId: parentNodeId,
+            nodeId,
+            componentType: selectedNodeType,
+            defaultProps: componentProps
         })
 
         // Dialog will close automatically via Dialog.Close

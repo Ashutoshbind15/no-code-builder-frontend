@@ -1,6 +1,7 @@
 
-
+import { useAtomValue, useSetAtom } from 'jotai'
 import AddElementDialog from './AddElementDialog'
+import { nodeAtomFamily, selectedElementAtom, rootNodeIdAtom } from "../atoms"
 
 // Helper function to generate friendly names from node IDs
 const generateFriendlyName = (id) => {
@@ -15,15 +16,19 @@ const generateFriendlyName = (id) => {
     return id
 }
 
-// Tree item component
-const TreeItem = ({ node, depth = 0, selectedElement, onSelectElement, setTreeState, setEvalsState }) => {
-    const friendlyName = generateFriendlyName(node.id)
+// Tree item component - now uses atom structure
+const TreeItem = ({ nodeId, depth = 0 }) => {
+    const node = useAtomValue(nodeAtomFamily(nodeId))
+    const selectedElement = useAtomValue(selectedElementAtom)
+    const setSelectedElement = useSetAtom(selectedElementAtom)
+
+    const friendlyName = generateFriendlyName(nodeId)
     const indentStyle = { paddingLeft: `${depth * 20}px` }
-    const isSelected = selectedElement === node.id
+    const isSelected = selectedElement === nodeId
 
     const handleItemClick = (e) => {
         e.stopPropagation()
-        onSelectElement(node.id)
+        setSelectedElement(nodeId)
     }
 
     return (
@@ -40,11 +45,7 @@ const TreeItem = ({ node, depth = 0, selectedElement, onSelectElement, setTreeSt
                     {friendlyName}
                 </span>
                 <div className="flex items-center gap-1">
-                    <AddElementDialog
-                        parentNodeId={node.id}
-                        setEvalsState={setEvalsState}
-                        setTreeState={setTreeState}
-                    >
+                    <AddElementDialog parentNodeId={nodeId}>
                         <button
                             className="w-5 h-5 text-xs bg-green-500 text-white rounded hover:bg-green-600 flex items-center justify-center"
                             title="Add child"
@@ -62,26 +63,20 @@ const TreeItem = ({ node, depth = 0, selectedElement, onSelectElement, setTreeSt
                     </button>
                 </div>
             </div>
-            {node.children && node.children.map(child => (
+            {node.children && node.children.map(childId => (
                 <TreeItem
-                    key={child.id}
-                    node={child}
+                    key={childId}
+                    nodeId={childId}
                     depth={depth + 1}
-                    selectedElement={selectedElement}
-                    onSelectElement={onSelectElement}
-                    setTreeState={setTreeState}
-                    setEvalsState={setEvalsState}
                 />
             ))}
         </div>
     )
 }
 
-// File tree view component
-const FileTreeView = ({ treeState, selectedElement, onSelectElement, setTreeState, setEvalsState }) => {
-    if (!treeState) {
-        return <div className="p-4 text-gray-500">No tree data available</div>
-    }
+// File tree view component - now uses atoms
+const FileTreeView = () => {
+    const rootNodeId = useAtomValue(rootNodeIdAtom)
 
     return (
         <div className="file-tree">
@@ -89,30 +84,18 @@ const FileTreeView = ({ treeState, selectedElement, onSelectElement, setTreeStat
                 <h3 className="text-sm font-semibold text-gray-600 px-2">Structure</h3>
             </div>
             <div className="tree-container">
-                <TreeItem
-                    node={treeState}
-                    selectedElement={selectedElement}
-                    onSelectElement={onSelectElement}
-                    setTreeState={setTreeState}
-                    setEvalsState={setEvalsState}
-                />
+                <TreeItem nodeId={rootNodeId} />
             </div>
         </div>
     )
 }
 
-const Sidebar = ({ treeState, selectedElement, onSelectElement, setTreeState, setEvalsState }) => {
+const Sidebar = () => {
     return (
         <div className="w-1/4 bg-white border-r border-gray-300 overflow-y-auto">
             <div className="p-4">
                 <h2 className="text-lg font-bold text-gray-800 mb-4">Editor</h2>
-                <FileTreeView
-                    treeState={treeState}
-                    selectedElement={selectedElement}
-                    onSelectElement={onSelectElement}
-                    setTreeState={setTreeState}
-                    setEvalsState={setEvalsState}
-                />
+                <FileTreeView />
             </div>
         </div>
     )

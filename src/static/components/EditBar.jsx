@@ -1,5 +1,7 @@
 import { useState } from "react"
+import { useAtomValue, useSetAtom } from 'jotai'
 import { getCategorizedProps } from "../../predefcomps/metadata"
+import { selectedElementAtom, nodePropsAtomFamily, updateNodePropsAtom } from "../atoms"
 
 // Helper function to generate friendly names from node IDs
 const generateFriendlyName = (id) => {
@@ -16,19 +18,20 @@ const generateFriendlyName = (id) => {
 
 
 // Component to edit props with categories - all components are custom components
-const PropEditor = ({ nodeId, nodeEvals, onPropChange }) => {
-    const nodeData = nodeEvals[nodeId]
+const PropEditor = ({ nodeId }) => {
+    const nodeProps = useAtomValue(nodePropsAtomFamily(nodeId))
+    const updateNodeProps = useSetAtom(updateNodePropsAtom)
 
     // Extract component type from nodeId (format: "ComponentType:id")
     const componentType = nodeId.split(":")[0]
     const categorizedProps = getCategorizedProps(componentType)
 
-    if (!nodeData || !nodeData.props) {
+    if (categorizedProps.length === 0) {
         return <div className="text-sm text-gray-500">No props available</div>
     }
 
-    if (categorizedProps.length === 0) {
-        return <div className="text-sm text-gray-500">No props available</div>
+    const handlePropChange = (propKey, propValue, category) => {
+        updateNodeProps({ nodeId, propKey, propValue, category })
     }
 
     return (
@@ -37,9 +40,9 @@ const PropEditor = ({ nodeId, nodeEvals, onPropChange }) => {
                 <CategoryEditor
                     key={categoryIndex}
                     category={category}
-                    nodeData={nodeData}
+                    nodeProps={nodeProps}
                     nodeId={nodeId}
-                    onPropChange={onPropChange}
+                    onPropChange={handlePropChange}
                 />
             ))}
         </div>
@@ -47,7 +50,7 @@ const PropEditor = ({ nodeId, nodeEvals, onPropChange }) => {
 }
 
 // Component to edit a category of props
-const CategoryEditor = ({ category, nodeData, nodeId, onPropChange }) => {
+const CategoryEditor = ({ category, nodeProps, nodeId, onPropChange }) => {
     const [expanded, setExpanded] = useState(true)
 
     if (!category.props || category.props.length === 0) {
@@ -67,11 +70,10 @@ const CategoryEditor = ({ category, nodeData, nodeId, onPropChange }) => {
                 <div className="p-3 space-y-2">
                     {category.props.map((propMeta) => {
                         // Get current value from categorized structure
-                        const getCurrentValue = () => {
-                            return nodeData.props[category.category]?.[propMeta.name]
-                        }
-
-                        const currentValue = getCurrentValue()
+                        // note: [high] - currently we're not using transactions for the addNode,
+                        // so first we add to the nodeTree, and then to props, till then this conditional check saves
+                        // the day.
+                        const currentValue = nodeProps[category.category]?.[propMeta.name]
 
                         return (
                             <div key={propMeta.name} className="flex items-center">
@@ -111,12 +113,10 @@ const CategoryEditor = ({ category, nodeData, nodeId, onPropChange }) => {
 
 
 
-const EditBar = ({
-    selectedElement,
-    nodeEvals,
-    onClose,
-    onPropChange
-}) => {
+const EditBar = () => {
+    const selectedElement = useAtomValue(selectedElementAtom)
+    const setSelectedElement = useSetAtom(selectedElementAtom)
+
     if (!selectedElement) {
         return (
             <div className="w-1/4 bg-gray-50 border-l border-gray-300">
@@ -130,6 +130,10 @@ const EditBar = ({
 
     const friendlyName = generateFriendlyName(selectedElement)
 
+    const handleClose = () => {
+        setSelectedElement(null)
+    }
+
     return (
         <div className="w-1/4 bg-white border-l border-gray-300 overflow-y-auto">
             <div className="p-4">
@@ -137,7 +141,7 @@ const EditBar = ({
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-gray-800">Edit Element</h2>
                     <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="w-6 h-6 text-gray-500 hover:text-gray-700 flex items-center justify-center"
                         title="Close"
                     >
@@ -156,11 +160,7 @@ const EditBar = ({
                 <div className="space-y-4">
                     <div>
                         <h3 className="text-sm font-semibold text-gray-700 mb-2">Properties</h3>
-                        <PropEditor
-                            nodeId={selectedElement}
-                            nodeEvals={nodeEvals}
-                            onPropChange={(key, value, category) => onPropChange(selectedElement, key, value, category)}
-                        />
+                        <PropEditor nodeId={selectedElement} />
                     </div>
                 </div>
             </div>

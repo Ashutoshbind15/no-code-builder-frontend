@@ -1,8 +1,11 @@
-import { useState } from "react"
+import { useEffect } from "react"
+import { useAtomValue, useSetAtom } from 'jotai'
+import { Provider } from 'jotai'
 import Sidebar from "../static/components/Sidebar"
 import EditBar from "../static/components/EditBar"
 import SimpleRenderer from "../static/components/simplestaterenderer"
 import { getCategorizedDefaultProps } from "../predefcomps/metadata"
+import { rootNodeIdAtom, initializeTreeAtom } from "../static/atoms"
 
 const starterStructure = {
     id: "PageWrapper:0",
@@ -36,73 +39,38 @@ const generateStarterNodeEvals = () => {
 
 const starterNodeEvals = generateStarterNodeEvals()
 
+// Inner component that uses atoms
+const EditorContent = () => {
+    const rootNodeId = useAtomValue(rootNodeIdAtom)
+    const initializeTree = useSetAtom(initializeTreeAtom)
 
-
-// All components are now custom components with categorized props
-// No HTML elements or literals - simplified architecture
-const EditorStatic = () => {
-
-    const [treeState, setTreeState] = useState(starterStructure)
-    const [nodeEvals, setNodeEvals] = useState(starterNodeEvals)
-
-    const [selectedElement, setSelectedElement] = useState(null)
-
-    // Handler for selecting elements
-    const handleSelectElement = (elementId) => {
-        setSelectedElement(elementId)
-    }
-
-    // Handler for closing the edit bar
-    const handleCloseEditBar = () => {
-        setSelectedElement(null)
-    }
-
-    // todo: [mid] to make the state global maybe
-
-    // Handler for prop changes - all components use categorized structure
-    const handlePropChange = (nodeId, propKey, propValue, category) => {
-        setNodeEvals(prev => {
-            const currentNode = prev[nodeId]
-            if (!currentNode || !category) return prev
-
-            return {
-                ...prev,
-                [nodeId]: {
-                    ...currentNode,
-                    props: {
-                        ...currentNode.props,
-                        [category]: {
-                            ...currentNode.props[category],
-                            [propKey]: propValue
-                        }
-                    }
-                }
-            }
+    useEffect(() => {
+        // Initialize the tree with starter data
+        initializeTree({
+            starterStructure,
+            starterNodeEvals
         })
-    }
-
-
-
+    }, [initializeTree])
 
     return (
         <div className="flex w-full">
-            <Sidebar
-                treeState={treeState}
-                setTreeState={setTreeState}
-                selectedElement={selectedElement}
-                onSelectElement={handleSelectElement}
-                setEvalsState={setNodeEvals}
-            />
+            <Sidebar />
             <div className="w-2/4 bg-blue-500 p-4">
-                <SimpleRenderer node={treeState} evalsState={nodeEvals} />
+                {rootNodeId && <SimpleRenderer nodeId={rootNodeId} />}
             </div>
-            <EditBar
-                selectedElement={selectedElement}
-                nodeEvals={nodeEvals}
-                onClose={handleCloseEditBar}
-                onPropChange={handlePropChange}
-            />
+            <EditBar />
         </div>
+    )
+}
+
+// All components are now custom components with categorized props
+// No HTML elements or literals - simplified architecture
+// Now uses Jotai for optimized state management
+const EditorStatic = () => {
+    return (
+        <Provider>
+            <EditorContent />
+        </Provider>
     )
 }
 

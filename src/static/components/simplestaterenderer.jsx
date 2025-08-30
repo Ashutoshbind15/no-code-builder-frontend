@@ -1,37 +1,30 @@
 import React from "react"
+import { useAtomValue } from 'jotai'
 import { componentTakesChildren, customNamesToComponentRegistry } from "../../predefcomps/metadata"
+import { nodeAtomFamily, nodePropsAtomFamily } from "../atoms"
 
-const resolveProps = (nodeId, evalsState) => {
-    const nodeEvalState = evalsState[nodeId]
-    if (!nodeEvalState) {
-        return {}
-    }
-    return nodeEvalState.props
-}
+// Optimized renderer using Jotai atoms - only re-renders when specific node data changes
+const SimpleRenderer = ({ nodeId }) => {
+    const node = useAtomValue(nodeAtomFamily(nodeId))
+    const categorizedProps = useAtomValue(nodePropsAtomFamily(nodeId))
 
-// Simplified renderer for custom components only
+    // console.log("nodeId", nodeId)
 
-const SimpleRenderer = ({ node, evalsState }) => {
-    const nodeId = node.id
-    const categorizedProps = resolveProps(nodeId, evalsState)
-
-    // Extract component type from nodeId (format: "ComponentType:id")
-    const customNodeType = nodeId.split(":")[0]
-    const CustomComponent = customNamesToComponentRegistry[customNodeType]
+    const CustomComponent = customNamesToComponentRegistry[node.componentType]
 
     if (!CustomComponent) {
-        console.warn(`Custom component not found: ${customNodeType}`)
+        console.warn(`Custom component not found: ${node.componentType}`)
         return null
     }
 
-    const takesChildren = componentTakesChildren(customNodeType)
+    const takesChildren = componentTakesChildren(node.componentType)
 
     // Spread the categorized props directly (e.g., content={...}, containerStyles={...})
     if (takesChildren) {
         return (
             <CustomComponent {...categorizedProps}>
-                {node.children?.map((child) => (
-                    <SimpleRenderer key={child.id} node={child} evalsState={evalsState} />
+                {node.children?.map((childId) => (
+                    <SimpleRenderer key={childId} nodeId={childId} />
                 ))}
             </CustomComponent>
         )
