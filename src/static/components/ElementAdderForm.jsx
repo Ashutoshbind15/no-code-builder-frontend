@@ -1,23 +1,10 @@
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DialogClose } from '../../components/ui/dialog';
-
-const customElementToDefaultPropsMapping = {
-    "Card": {
-        title: "Hello, World!",
-        description: "This is a description",
-        image1: "https://images.example.com/150"
-    },
-    "Text": {
-        text: "Hello, World!"
-    },
-    "Container": {},
-    "PageWrapper": {}
-}
+import { getCategorizedDefaultProps, getDefaultsForHtmlElements } from '../../predefcomps/metadata';
 
 const customComponents = ["Card", "Text", "Container", "PageWrapper"]
 const htmlElements = ["div", "button", "span", "p", "h1", "h2", "h3"]
-const allElementTypes = [...customComponents, "Literal", ...htmlElements]
 
 const AddElementForm = ({ parentNodeId, setEvalsState, setLiteralValues, setTreeState }) => {
     const [selectedNodeType, setSelectedNodeType] = useState("Card")
@@ -36,7 +23,7 @@ const AddElementForm = ({ parentNodeId, setEvalsState, setLiteralValues, setTree
 
         // populate the evals and literals state
         if (isCustomComponent) {
-            const componentProps = customElementToDefaultPropsMapping[selectedNodeType];
+            const componentProps = getCategorizedDefaultProps(selectedNodeType)
             setEvalsState(prev => ({
                 ...prev,
                 [nodeId]: {
@@ -49,11 +36,12 @@ const AddElementForm = ({ parentNodeId, setEvalsState, setLiteralValues, setTree
                 [nodeId]: "Hello, World!"
             }))
         } else {
-            // HTML elements
+            // HTML elements - use flat default props
+            const htmlDefaults = getDefaultsForHtmlElements(selectedNodeType)
             setEvalsState(prev => ({
                 ...prev,
                 [nodeId]: {
-                    props: {}
+                    props: htmlDefaults
                 }
             }))
         }

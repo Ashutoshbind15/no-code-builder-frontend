@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { getCategorizedProps, isCustomComponent } from "../../predefcomps/metadata"
 
 // Helper function to generate friendly names from node IDs
 const generateFriendlyName = (id) => {
@@ -52,37 +53,148 @@ const ObjectPropEditor = ({ propKey, propValue, onPropChange }) => {
     )
 }
 
-// Component to edit props
+// Component to edit props with categories
 const PropEditor = ({ nodeId, nodeEvals, onPropChange }) => {
     const nodeData = nodeEvals[nodeId]
+
+    // Extract component type from nodeId
+    const componentType = nodeId.startsWith("p:") ? nodeId.split(":")[1] : nodeId.split(":")[0]
+    const categorizedProps = getCategorizedProps(componentType)
 
     if (!nodeData || !nodeData.props) {
         return <div className="text-sm text-gray-500">No props available</div>
     }
 
-    return (
-        <div className="space-y-2">
-            {Object.entries(nodeData.props).map(([key, value]) => (
-                <div key={key}>
-                    {typeof value === 'object' && value !== null ? (
-                        <ObjectPropEditor
-                            propKey={key}
-                            propValue={value}
-                            onPropChange={onPropChange}
-                        />
-                    ) : (
-                        <div className="flex items-center">
-                            <label className="text-sm text-gray-700 w-20">{key}:</label>
-                            <input
-                                type="text"
-                                value={value || ''}
-                                onChange={(e) => onPropChange(key, e.target.value)}
-                                className="flex-1 text-sm border border-gray-300 rounded px-2 py-1 ml-2"
+    // Check if this is an HTML element (non-custom component)
+    if (!isCustomComponent(componentType)) {
+        // For HTML elements, use flat prop structure
+        return (
+            <div className="space-y-2">
+                {Object.entries(nodeData.props).map(([key, value]) => (
+                    <div key={key}>
+                        {typeof value === 'object' && value !== null ? (
+                            <ObjectPropEditor
+                                propKey={key}
+                                propValue={value}
+                                onPropChange={onPropChange}
                             />
-                        </div>
-                    )}
-                </div>
+                        ) : typeof value === 'boolean' ? (
+                            <div className="flex items-center">
+                                <label className="text-sm text-gray-700 flex-1">{key}:</label>
+                                <input
+                                    type="checkbox"
+                                    checked={value}
+                                    onChange={(e) => onPropChange(key, e.target.checked)}
+                                    className="ml-2"
+                                />
+                            </div>
+                        ) : (
+                            <div className="flex items-center">
+                                <label className="text-sm text-gray-700 w-20">{key}:</label>
+                                <input
+                                    type="text"
+                                    value={value || ''}
+                                    onChange={(e) => onPropChange(key, e.target.value)}
+                                    className="flex-1 text-sm border border-gray-300 rounded px-2 py-1 ml-2"
+                                />
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
+    if (categorizedProps.length === 0) {
+        // Fallback if no categorized props found for custom components
+        return <div className="text-sm text-gray-500">No props available</div>
+    }
+
+    return (
+        <div className="space-y-4">
+            {categorizedProps.map((category, categoryIndex) => (
+                <CategoryEditor
+                    key={categoryIndex}
+                    category={category}
+                    nodeData={nodeData}
+                    nodeId={nodeId}
+                    onPropChange={onPropChange}
+                />
             ))}
+        </div>
+    )
+}
+
+// Component to edit a category of props
+const CategoryEditor = ({ category, nodeData, nodeId, onPropChange }) => {
+    const [expanded, setExpanded] = useState(true)
+
+    if (!category.props || category.props.length === 0) {
+        return null
+    }
+
+    return (
+        <div className="border border-gray-200 rounded-lg">
+            <button
+                onClick={() => setExpanded(!expanded)}
+                className="w-full flex items-center justify-between p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-t-lg"
+            >
+                <span className="font-medium text-gray-800 capitalize">{category.category}</span>
+                <span className="text-gray-500">{expanded ? '▼' : '▶'}</span>
+            </button>
+            {expanded && (
+                <div className="p-3 space-y-2">
+                    {category.props.map((propMeta) => {
+                        // Get current value considering nested structure
+                        const getCurrentValue = () => {
+                            const componentType = nodeId.startsWith("p:") ? nodeId.split(":")[1] : nodeId.split(":")[0]
+
+                            // For custom components, look in the categorized structure
+                            if (isCustomComponent(componentType)) {
+                                return nodeData.props[category.category]?.[propMeta.name]
+                            }
+
+                            // For HTML elements, look at root level
+                            return nodeData.props[propMeta.name]
+                        }
+
+                        const currentValue = getCurrentValue()
+
+                        return (
+                            <div key={propMeta.name}>
+                                {propMeta.type === 'object' ? (
+                                    <ObjectPropEditor
+                                        propKey={propMeta.name}
+                                        propValue={currentValue || propMeta.defaultValue || {}}
+                                        onPropChange={onPropChange}
+                                    />
+                                ) : propMeta.type === 'boolean' ? (
+                                    <div className="flex items-center">
+                                        <label className="text-sm text-gray-700 flex-1">{propMeta.name}:</label>
+                                        <input
+                                            type="checkbox"
+                                            checked={currentValue ?? propMeta.defaultValue}
+                                            onChange={(e) => onPropChange(propMeta.name, e.target.checked, category.category)}
+                                            className="ml-2"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center">
+                                        <label className="text-sm text-gray-700 w-24">{propMeta.name}:</label>
+                                        <input
+                                            type="text"
+                                            value={currentValue ?? propMeta.defaultValue ?? ''}
+                                            onChange={(e) => onPropChange(propMeta.name, e.target.value, category.category)}
+                                            className="flex-1 text-sm border border-gray-300 rounded px-2 py-1 ml-2"
+                                            placeholder={propMeta.defaultValue?.toString() || ''}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
         </div>
     )
 }
@@ -166,7 +278,7 @@ const EditBar = ({
                             <PropEditor
                                 nodeId={selectedElement}
                                 nodeEvals={nodeEvals}
-                                onPropChange={(key, value) => onPropChange(selectedElement, key, value)}
+                                onPropChange={(key, value, category) => onPropChange(selectedElement, key, value, category)}
                             />
                         </div>
                     )}

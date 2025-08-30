@@ -2,6 +2,7 @@ import { useState } from "react"
 import Sidebar from "../static/components/Sidebar"
 import EditBar from "../static/components/EditBar"
 import SimpleRenderer from "../static/components/simplestaterenderer"
+import { getCategorizedDefaultProps, isCustomComponent } from "../predefcomps/metadata"
 
 const starterStructure = {
     id: "p:PageWrapper:0",
@@ -12,18 +13,25 @@ const starterStructure = {
     }]
 }
 
-const starterNodeEvals = {
-    "p:PageWrapper:0": {
-        props: {}
-    },
-    "p:Card:0.2": {
-        props: {
-            title: "Hello, World!",
-            description: "This is a description",
-            image1: "https://images.example.com/150"
+// Generate starter node evaluations using metadata defaults
+const generateStarterNodeEvals = () => {
+    const pageWrapperDefaults = getCategorizedDefaultProps("PageWrapper")
+    const cardDefaults = getCategorizedDefaultProps("Card")
+
+    return {
+        "p:PageWrapper:0": {
+            props: pageWrapperDefaults
+        },
+        "p:Card:0.2": {
+            props: {
+                content: cardDefaults.content || {},
+                containerStyles: cardDefaults.containerStyles || {}
+            }
         }
     }
 }
+
+const starterNodeEvals = generateStarterNodeEvals()
 
 const starterLiteralValues = {
     "p:Literal:0.1": "Hello, World!"
@@ -64,18 +72,63 @@ const EditorStatic = () => {
 
     // todo: [mid] to make the state global maybe
 
-    // Handler for prop changes
-    const handlePropChange = (nodeId, propKey, propValue) => {
-        setNodeEvals(prev => ({
-            ...prev,
-            [nodeId]: {
-                ...prev[nodeId],
-                props: {
-                    ...prev[nodeId]?.props,
-                    [propKey]: propValue
+    // Handler for prop changes - uses categorized structure for custom components
+    const handlePropChange = (nodeId, propKey, propValue, category = null) => {
+        setNodeEvals(prev => {
+            const currentNode = prev[nodeId]
+            if (!currentNode) return prev
+
+            // Skip if props is empty object (HTML elements with no props)
+            if (!currentNode.props || Object.keys(currentNode.props).length === 0) {
+                return prev
+            }
+
+            // Extract component type from nodeId
+            const componentType = nodeId.startsWith("p:") ? nodeId.split(":")[1] : nodeId.split(":")[0]
+
+            // Check if this is a custom component
+            if (isCustomComponent(componentType)) {
+                // For custom components, we need to know which category the prop belongs to
+                if (!category) {
+                    // Try to determine category from metadata
+                    const metadata = getCategorizedDefaultProps(componentType)
+                    for (const [cat, props] of Object.entries(metadata)) {
+                        if (props && propKey in props) {
+                            category = cat
+                            break
+                        }
+                    }
+                }
+
+                if (category) {
+                    return {
+                        ...prev,
+                        [nodeId]: {
+                            ...currentNode,
+                            props: {
+                                ...currentNode.props,
+                                [category]: {
+                                    ...currentNode.props[category],
+                                    [propKey]: propValue
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        }))
+
+            // For HTML elements, use flat structure
+            return {
+                ...prev,
+                [nodeId]: {
+                    ...currentNode,
+                    props: {
+                        ...currentNode.props,
+                        [propKey]: propValue
+                    }
+                }
+            }
+        })
     }
 
     // Handler for literal value changes

@@ -1,8 +1,5 @@
 import React from "react"
-import { Card } from "../../predefcomps/Card"
-import { Container } from "../../predefcomps/Container"
-import { Text } from "../../predefcomps/Text"
-import PageWrapper from "../../predefcomps/PageWrapper"
+import { componentTakesChildren, customNamesToComponentRegistry } from "../../predefcomps/metadata"
 
 const resolveProps = (nodeId, evalsState) => {
     const nodeEvalState = evalsState[nodeId]
@@ -11,22 +8,6 @@ const resolveProps = (nodeId, evalsState) => {
         return {}
     }
     return nodeEvalState.props
-}
-
-const htmlomponentsThatCanTakeChildren = ["div", "main", "section", "article", "header", "footer", "aside", "nav", "form", "ul", "ol", "li", "table", "tbody", "tr", "td", "th", "button"]
-
-const customNamesToComponentRegistry = {
-    "Card": Card,
-    "Container": Container,
-    "Text": Text,
-    "PageWrapper": PageWrapper
-}
-
-const customComponentToTakesChildrenMapping = {
-    "Card": false,
-    "Container": true,
-    "Text": false,
-    "PageWrapper": true
 }
 
 // For now we using the React.createElement approach, 
@@ -40,7 +21,7 @@ const SimpleRenderer = ({ node, evalsState, literalValues }) => {
 
     if (!isCustomComponent) {
         const nodeType = nodeId.split(":")[0]
-        const takesChildren = htmlomponentsThatCanTakeChildren.includes(nodeType)
+        const takesChildren = componentTakesChildren(nodeType)
 
         if (takesChildren) {
             return React.createElement(
@@ -66,7 +47,7 @@ const SimpleRenderer = ({ node, evalsState, literalValues }) => {
             return null
         }
 
-        const takesChildren = customComponentToTakesChildrenMapping[customNodeType]
+        const takesChildren = componentTakesChildren(customNodeType)
         if (takesChildren) {
             return <CustomComponent {...nodeProps}>
                 {node.children.map((child) => (

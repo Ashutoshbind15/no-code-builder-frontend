@@ -1,52 +1,34 @@
 import React from 'react';
+import { getCategorizedDefaultProps } from './metadata';
 
-const PageWrapper = ({
-    children,
-    // Background properties
-    backgroundColor = '#ffffff',
-    backgroundImage = null,
-    backgroundGradient = null,
-    backgroundPosition = 'center',
-    backgroundSize = 'cover',
-    backgroundRepeat = 'no-repeat',
+const PageWrapper = ({ children, background = {}, layout = {}, spacing = {} }) => {
+    // Get categorized default props from metadata
+    const defaults = getCategorizedDefaultProps("PageWrapper");
 
-    // Layout properties
-    maxWidth = '1200px',
-    minHeight = '100vh',
-    padding = '20px',
-    paddingTop = null,
-    paddingBottom = null,
-    paddingLeft = null,
-    paddingRight = null,
+    // Merge props with defaults for each category
+    const finalBackground = {
+        backgroundColor: background.backgroundColor ?? defaults.background?.backgroundColor,
+        backgroundImage: background.backgroundImage ?? defaults.background?.backgroundImage,
+        backgroundGradient: background.backgroundGradient ?? defaults.background?.backgroundGradient,
+        backgroundPosition: background.backgroundPosition ?? defaults.background?.backgroundPosition,
+        backgroundSize: background.backgroundSize ?? defaults.background?.backgroundSize,
+        backgroundRepeat: background.backgroundRepeat ?? defaults.background?.backgroundRepeat
+    };
 
-    // Spacing
-    marginTop = '0px',
-    marginBottom = '0px',
+    const finalLayout = {
+        maxWidth: layout.maxWidth ?? defaults.layout?.maxWidth,
+        minHeight: layout.minHeight ?? defaults.layout?.minHeight,
+        padding: layout.padding ?? defaults.layout?.padding,
+        paddingTop: layout.paddingTop ?? defaults.layout?.paddingTop,
+        paddingBottom: layout.paddingBottom ?? defaults.layout?.paddingBottom,
+        paddingLeft: layout.paddingLeft ?? defaults.layout?.paddingLeft,
+        paddingRight: layout.paddingRight ?? defaults.layout?.paddingRight
+    };
 
-    // Typography defaults
-    textColor = '#1f2937',
-    fontFamily = 'system-ui, -apple-system, sans-serif',
-
-    // Container behavior
-    centerContent = true,
-    fullWidth = false,
-
-    // Additional styling
-    borderRadius = '0px',
-    boxShadow = 'none',
-
-    // Custom classes (for advanced users)
-    className = '',
-
-    // Animation
-    fadeIn = false,
-
-    // Responsive behavior
-    mobileMaxWidth = '100%',
-    mobilePadding = '16px',
-
-    ...otherProps
-}) => {
+    const finalSpacing = {
+        marginTop: spacing.marginTop ?? defaults.spacing?.marginTop,
+        marginBottom: spacing.marginBottom ?? defaults.spacing?.marginBottom
+    };
     // Helper function to convert color values to valid CSS
     const processColor = (color) => {
         if (!color) return 'transparent';
@@ -64,15 +46,15 @@ const PageWrapper = ({
     const getBackgroundStyle = () => {
         let bgStyle = {};
 
-        if (backgroundGradient) {
-            bgStyle.backgroundImage = backgroundGradient;
-        } else if (backgroundImage) {
-            bgStyle.backgroundImage = `url(${backgroundImage})`;
-            bgStyle.backgroundPosition = backgroundPosition;
-            bgStyle.backgroundSize = backgroundSize;
-            bgStyle.backgroundRepeat = backgroundRepeat;
+        if (finalBackground.backgroundGradient) {
+            bgStyle.backgroundImage = finalBackground.backgroundGradient;
+        } else if (finalBackground.backgroundImage) {
+            bgStyle.backgroundImage = `url(${finalBackground.backgroundImage})`;
+            bgStyle.backgroundPosition = finalBackground.backgroundPosition;
+            bgStyle.backgroundSize = finalBackground.backgroundSize;
+            bgStyle.backgroundRepeat = finalBackground.backgroundRepeat;
         } else {
-            bgStyle.backgroundColor = processColor(backgroundColor);
+            bgStyle.backgroundColor = processColor(finalBackground.backgroundColor);
         }
 
         return bgStyle;
@@ -80,73 +62,46 @@ const PageWrapper = ({
 
     // Build padding styles
     const getPaddingStyle = () => {
-        if (paddingTop || paddingBottom || paddingLeft || paddingRight) {
+        if (finalLayout.paddingTop || finalLayout.paddingBottom || finalLayout.paddingLeft || finalLayout.paddingRight) {
             return {
-                paddingTop: processSize(paddingTop || padding),
-                paddingBottom: processSize(paddingBottom || padding),
-                paddingLeft: processSize(paddingLeft || padding),
-                paddingRight: processSize(paddingRight || padding),
+                paddingTop: processSize(finalLayout.paddingTop || finalLayout.padding),
+                paddingBottom: processSize(finalLayout.paddingBottom || finalLayout.padding),
+                paddingLeft: processSize(finalLayout.paddingLeft || finalLayout.padding),
+                paddingRight: processSize(finalLayout.paddingRight || finalLayout.padding),
             };
         }
-        return { padding: processSize(padding) };
+        return { padding: processSize(finalLayout.padding) };
     };
 
     // Main container styles
     const containerStyles = {
-        minHeight: processSize(minHeight),
-        color: processColor(textColor),
-        fontFamily: fontFamily,
-        marginTop: processSize(marginTop),
-        marginBottom: processSize(marginBottom),
-        borderRadius: processSize(borderRadius),
-        boxShadow: boxShadow,
+        minHeight: processSize(finalLayout.minHeight),
+        marginTop: processSize(finalSpacing.marginTop),
+        marginBottom: processSize(finalSpacing.marginBottom),
         ...getBackgroundStyle(),
-        ...(fadeIn && {
-            animation: 'fadeIn 0.6s ease-in-out',
-        }),
     };
 
     // Inner container styles for content centering and max-width
     const innerContainerStyles = {
-        maxWidth: fullWidth ? '100%' : processSize(maxWidth),
+        maxWidth: processSize(finalLayout.maxWidth),
         width: '100%',
-        margin: centerContent ? '0 auto' : '0',
+        margin: '0 auto',
         ...getPaddingStyle(),
     };
 
     // Responsive classes using Tailwind
-    const responsiveClasses = `
-    ${!fullWidth ? `max-w-7xl mx-auto` : ''}
-    ${centerContent ? 'mx-auto' : ''}
-  `;
+    const responsiveClasses = `max-w-7xl mx-auto`;
 
     return (
         <>
-            {fadeIn && (
-                <style jsx>{`
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        `}</style>
-            )}
-
             <div
                 style={containerStyles}
-                className={`relative w-full ${className}`}
-                {...otherProps}
+                className="relative w-full"
             >
                 {/* Background overlay for better text readability when using background images */}
-                {backgroundImage && (
+                {finalBackground.backgroundImage && (
                     <div
                         className="absolute inset-0 bg-black bg-opacity-20 pointer-events-none"
-                        style={{ borderRadius: processSize(borderRadius) }}
                     />
                 )}
 
@@ -155,11 +110,7 @@ const PageWrapper = ({
                     className={`relative z-10 ${responsiveClasses.trim()}`}
                 >
                     {/* Mobile-responsive container */}
-                    <div className={`
-            w-full
-            px-4 sm:px-6 lg:px-8
-            ${fullWidth ? '' : 'max-w-none sm:max-w-none lg:max-w-7xl'}
-          `}>
+                    <div className="w-full px-4 sm:px-6 lg:px-8 max-w-none sm:max-w-none lg:max-w-7xl">
                         {children}
                     </div>
                 </div>
@@ -171,39 +122,43 @@ const PageWrapper = ({
 // Default export with some common presets
 export const MarketingPageWrapper = (props) => (
     <PageWrapper
-        backgroundColor="#f8fafc"
-        padding="40px"
-        paddingTop="60px"
-        paddingBottom="60px"
-        textColor="#1e293b"
-        fadeIn={true}
+        background={{
+            backgroundColor: "#f8fafc"
+        }}
+        layout={{
+            padding: "40px",
+            paddingTop: "60px",
+            paddingBottom: "60px"
+        }}
         {...props}
     />
 );
 
 export const HeroPageWrapper = (props) => (
     <PageWrapper
-        minHeight="100vh"
-        backgroundColor="#0f172a"
-        backgroundGradient="linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
-        textColor="#f8fafc"
-        centerContent={true}
-        padding="80px"
-        fadeIn={true}
+        background={{
+            backgroundColor: "#0f172a",
+            backgroundGradient: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
+        }}
+        layout={{
+            minHeight: "100vh",
+            padding: "80px"
+        }}
         {...props}
     />
 );
 
 export const ContentPageWrapper = (props) => (
     <PageWrapper
-        backgroundColor="#ffffff"
-        maxWidth="800px"
-        padding="40px"
-        paddingTop="80px"
-        paddingBottom="80px"
-        textColor="#374151"
-        boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1)"
-        borderRadius="8px"
+        background={{
+            backgroundColor: "#ffffff"
+        }}
+        layout={{
+            maxWidth: "800px",
+            padding: "40px",
+            paddingTop: "80px",
+            paddingBottom: "80px"
+        }}
         {...props}
     />
 );
