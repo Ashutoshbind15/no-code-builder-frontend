@@ -108,6 +108,34 @@ export const updateNodePropsAtom = atom(
     }
 );
 
+// Helper atom to find parent node ID
+export const findParentNodeIdAtom = atom(
+    null,
+    (get, set, nodeId) => {
+        const rootId = get(rootNodeIdAtom);
+
+        const findParent = (currentNodeId, targetNodeId) => {
+            try {
+                const currentNode = get(nodeAtomFamily(currentNodeId));
+                if (currentNode.children && currentNode.children.includes(targetNodeId)) {
+                    return currentNodeId;
+                }
+
+                // Recursively search in children
+                for (const childId of currentNode.children || []) {
+                    const found = findParent(childId, targetNodeId);
+                    if (found) return found;
+                }
+            } catch (e) {
+                // Node doesn't exist, skip
+            }
+            return null;
+        };
+
+        return findParent(rootId, nodeId);
+    }
+);
+
 // Helper atom to initialize the tree with starter data
 export const initializeTreeAtom = atom(
     null,
