@@ -5,10 +5,27 @@ import { DialogClose } from '../../components/ui/dialog';
 import { getCategorizedDefaultProps } from '../../predefcomps/metadata';
 import { addNodeAtom } from '../atoms';
 
-const customComponents = ["Card", "Text", "Container", "PageWrapper"]
+// Organized component categories for better UX
+const componentCategories = {
+    "Layout": ["PageWrapper", "Layout", "Container"],
+    "Content": ["Text", "Image", "Video", "Link"],
+    "Interactive": ["Card"],
+}
+
+// Component descriptions for better UX
+const componentDescriptions = {
+    "PageWrapper": "Main page container with background and layout settings",
+    "Layout": "Flexbox container for arranging elements with direction, alignment, and spacing controls",
+    "Container": "Simple container for grouping elements",
+    "Text": "Typography component with support for headings, paragraphs, and text styling",
+    "Image": "Image display with size, fit, and styling options",
+    "Video": "Video player with controls, autoplay, and poster image support",
+    "Link": "Navigation links with React Router integration for internal and external links",
+    "Card": "Content card with title, description, and image",
+}
 
 const AddElementForm = ({ parentNodeId }) => {
-    const [selectedNodeType, setSelectedNodeType] = useState("Card")
+    const [selectedNodeType, setSelectedNodeType] = useState("Text")
     const addNode = useSetAtom(addNodeAtom)
 
     const handleAddElement = () => {
@@ -40,11 +57,24 @@ const AddElementForm = ({ parentNodeId }) => {
                     onChange={(e) => setSelectedNodeType(e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
-                    {customComponents.map(type => (
-                        <option key={type} value={type}>{type}</option>
+                    {Object.entries(componentCategories).map(([category, components]) => (
+                        <optgroup key={category} label={category}>
+                            {components.map(type => (
+                                <option key={type} value={type}>{type}</option>
+                            ))}
+                        </optgroup>
                     ))}
                 </select>
             </div>
+
+            {/* Component Description */}
+            {componentDescriptions[selectedNodeType] && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <p className="text-sm text-blue-800">
+                        <span className="font-medium">{selectedNodeType}:</span> {componentDescriptions[selectedNodeType]}
+                    </p>
+                </div>
+            )}
 
             <div className="flex justify-end space-x-2">
                 <DialogClose

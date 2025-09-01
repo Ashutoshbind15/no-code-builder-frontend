@@ -2,25 +2,74 @@ import { useState } from "react"
 import { useAtomValue, useSetAtom } from 'jotai'
 import { getCategorizedProps } from "../../predefcomps/metadata"
 import { selectedElementAtom, nodePropsAtomFamily, updateNodePropsAtom } from "../atoms"
+import { getPropEditor } from "../../predefcomps/propEditors"
 
-// Helper function to generate friendly names from node IDs
 const generateFriendlyName = (id) => {
-    // Format is now "ComponentType:id"
-    const parts = id.split(':')
-
-    if (parts.length === 2) {
-        return `${parts[0]}${parts[1]}`
-    }
-
-    return id
+    return id.split(':')[0]
 }
 
+// Simple prop editor row component
+const PropEditorRow = ({ propMeta, currentValue, onChange, categoryName }) => {
+    const PropEditorComponent = getPropEditor(propMeta)
 
+    const handleChange = (value) => {
+        onChange(propMeta.name, value, categoryName)
+    }
 
-// Component to edit props with categories - all components are custom components
-const PropEditor = ({ nodeId }) => {
+    return (
+        <div className="flex items-center gap-3">
+            <label className="text-sm text-gray-700 min-w-[80px] font-medium">
+                {propMeta.name}:
+            </label>
+            <div className="flex-1">
+                <PropEditorComponent
+                    value={currentValue ?? propMeta.defaultValue}
+                    onChange={handleChange}
+                    placeholder={propMeta.defaultValue?.toString() || ''}
+                />
+            </div>
+        </div>
+    )
+}
+
+// Simple category section component
+const CategorySection = ({ category, nodeProps, onPropChange, isExpanded, onToggle }) => {
+    if (!category.props || category.props.length === 0) return null
+
+    return (
+        <div className="border border-gray-200 rounded-lg">
+            <button
+                onClick={onToggle}
+                className="w-full flex items-center justify-between p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-t-lg"
+            >
+                <span className="font-medium text-gray-800 capitalize">{category.category}</span>
+                <span className="text-gray-500">{isExpanded ? '▼' : '▶'}</span>
+            </button>
+            {isExpanded && (
+                <div className="p-3 space-y-3">
+                    {category.props.map((propMeta) => {
+                        const currentValue = nodeProps[category.category]?.[propMeta.name]
+                        return (
+                            <PropEditorRow
+                                key={propMeta.name}
+                                propMeta={propMeta}
+                                currentValue={currentValue}
+                                onChange={onPropChange}
+                                categoryName={category.category}
+                            />
+                        )
+                    })}
+                </div>
+            )}
+        </div>
+    )
+}
+
+// Props editor component
+const PropsEditor = ({ nodeId }) => {
     const nodeProps = useAtomValue(nodePropsAtomFamily(nodeId))
     const updateNodeProps = useSetAtom(updateNodePropsAtom)
+    const [expandedCategories, setExpandedCategories] = useState({})
 
     // Extract component type from nodeId (format: "ComponentType:id")
     const componentType = nodeId.split(":")[0]
@@ -34,84 +83,35 @@ const PropEditor = ({ nodeId }) => {
         updateNodeProps({ nodeId, propKey, propValue, category })
     }
 
-    return (
-        <div className="space-y-4">
-            {categorizedProps.map((category, categoryIndex) => (
-                <CategoryEditor
-                    key={categoryIndex}
-                    category={category}
-                    nodeProps={nodeProps}
-                    nodeId={nodeId}
-                    onPropChange={handlePropChange}
-                />
-            ))}
-        </div>
-    )
-}
-
-// Component to edit a category of props
-const CategoryEditor = ({ category, nodeProps, nodeId, onPropChange }) => {
-    const [expanded, setExpanded] = useState(true)
-
-    if (!category.props || category.props.length === 0) {
-        return null
+    const toggleCategory = (categoryName) => {
+        setExpandedCategories(prev => ({
+            ...prev,
+            [categoryName]: !prev[categoryName]
+        }))
     }
 
     return (
-        <div className="border border-gray-200 rounded-lg">
-            <button
-                onClick={() => setExpanded(!expanded)}
-                className="w-full flex items-center justify-between p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-t-lg"
-            >
-                <span className="font-medium text-gray-800 capitalize">{category.category}</span>
-                <span className="text-gray-500">{expanded ? '▼' : '▶'}</span>
-            </button>
-            {expanded && (
-                <div className="p-3 space-y-2">
-                    {category.props.map((propMeta) => {
-                        // Get current value from categorized structure
-                        // note: [high] - currently we're not using transactions for the addNode,
-                        // so first we add to the nodeTree, and then to props, till then this conditional check saves
-                        // the day.
-                        const currentValue = nodeProps[category.category]?.[propMeta.name]
+        <div className="space-y-3">
+            {categorizedProps.map((category, categoryIndex) => {
+                const isExpanded = expandedCategories[category.category] ?? true
 
-                        return (
-                            <div key={propMeta.name} className="flex items-center">
-                                <label className="text-sm text-gray-700 w-24">{propMeta.name}:</label>
-                                {propMeta.type === 'boolean' ? (
-                                    <input
-                                        type="checkbox"
-                                        checked={currentValue ?? propMeta.defaultValue ?? false}
-                                        onChange={(e) => onPropChange(propMeta.name, e.target.checked, category.category)}
-                                        className="ml-2"
-                                    />
-                                ) : propMeta.type === 'number' ? (
-                                    <input
-                                        type="number"
-                                        value={currentValue ?? propMeta.defaultValue ?? ''}
-                                        onChange={(e) => onPropChange(propMeta.name, parseFloat(e.target.value) || 0, category.category)}
-                                        className="flex-1 text-sm border border-gray-300 rounded px-2 py-1 ml-2"
-                                        placeholder={propMeta.defaultValue?.toString() || ''}
-                                    />
-                                ) : (
-                                    <input
-                                        type="text"
-                                        value={currentValue ?? propMeta.defaultValue ?? ''}
-                                        onChange={(e) => onPropChange(propMeta.name, e.target.value, category.category)}
-                                        className="flex-1 text-sm border border-gray-300 rounded px-2 py-1 ml-2"
-                                        placeholder={propMeta.defaultValue?.toString() || ''}
-                                    />
-                                )}
-                            </div>
-                        )
-                    })}
-                </div>
-            )}
+                return (
+                    <CategorySection
+                        key={categoryIndex}
+                        category={category}
+                        nodeProps={nodeProps}
+                        onPropChange={handlePropChange}
+                        isExpanded={isExpanded}
+                        onToggle={() => toggleCategory(category.category)}
+                    />
+                )
+            })}
         </div>
     )
 }
 
-
+// todo: [high], check whether or not we need to memoize its children, or even whether its worth it
+// memoization here, would optimize the rendering of each individual prop editors, and the categories sections
 
 const EditBar = () => {
     const selectedElement = useAtomValue(selectedElementAtom)
@@ -157,11 +157,9 @@ const EditBar = () => {
                 </div>
 
                 {/* Editor Content */}
-                <div className="space-y-4">
-                    <div>
-                        <h3 className="text-sm font-semibold text-gray-700 mb-2">Properties</h3>
-                        <PropEditor nodeId={selectedElement} />
-                    </div>
+                <div>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">Properties</h3>
+                    <PropsEditor nodeId={selectedElement} />
                 </div>
             </div>
         </div>
