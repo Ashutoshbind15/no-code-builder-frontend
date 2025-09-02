@@ -12,20 +12,36 @@ export const Text = ({ content = {}, styling = {} }) => {
     const finalStyling = {
         className: styling.className ?? defaults.styling?.className,
         fontSize: styling.fontSize ?? defaults.styling?.fontSize,
-        bold: styling.bold ?? defaults.styling?.bold,
-        italic: styling.italic ?? defaults.styling?.italic
+        fontWeight: styling.fontWeight ?? defaults.styling?.fontWeight,
+        fontStyle: styling.fontStyle ?? defaults.styling?.fontStyle,
+        color: styling.color ?? defaults.styling?.color,
+        textAlign: styling.textAlign ?? defaults.styling?.textAlign,
+        lineHeight: styling.lineHeight ?? defaults.styling?.lineHeight,
+        letterSpacing: styling.letterSpacing ?? defaults.styling?.letterSpacing,
+        textDecoration: styling.textDecoration ?? defaults.styling?.textDecoration,
+        textTransform: styling.textTransform ?? defaults.styling?.textTransform,
+        element: styling.element ?? defaults.styling?.element
     }
 
     // Build dynamic styles
     const dynamicStyles = {
         fontSize: `${finalStyling.fontSize}px`,
-        fontWeight: finalStyling.bold ? 'bold' : 'normal',
-        fontStyle: finalStyling.italic ? 'italic' : 'normal'
+        fontWeight: finalStyling.fontWeight,
+        fontStyle: finalStyling.fontStyle,
+        color: finalStyling.color,
+        textAlign: finalStyling.textAlign,
+        lineHeight: finalStyling.lineHeight,
+        letterSpacing: finalStyling.letterSpacing,
+        textDecoration: finalStyling.textDecoration,
+        textTransform: finalStyling.textTransform
     }
 
+    // Determine which HTML element to use
+    const ElementType = finalStyling.element
+
     return (
-        <p id="user-text" className={finalStyling.className} style={dynamicStyles}>
+        <ElementType id="user-text" className={finalStyling.className} style={dynamicStyles}>
             {finalContent.text}
-        </p>
+        </ElementType>
     )
 }
