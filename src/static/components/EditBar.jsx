@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { memo, useState } from "react"
 import { useAtomValue, useSetAtom } from 'jotai'
 import { getCategorizedProps } from "../../predefcomps/metadata"
 import { selectedElementAtom, nodePropsAtomFamily, updateNodePropsAtom } from "../atoms"
@@ -9,11 +9,12 @@ const generateFriendlyName = (id) => {
 }
 
 // Simple prop editor row component
-const PropEditorRow = ({ propMeta, currentValue, onChange, categoryName }) => {
+const PropEditorRow = memo(({ propMeta, currentValue, categoryName, nodeId }) => {
     const PropEditorComponent = getPropEditor(propMeta)
+    const updateNodeProps = useSetAtom(updateNodePropsAtom)
 
     const handleChange = (value) => {
-        onChange(propMeta.name, value, categoryName)
+        updateNodeProps({ nodeId, propKey: propMeta.name, propValue: value, category: categoryName })
     }
 
     return (
@@ -30,11 +31,19 @@ const PropEditorRow = ({ propMeta, currentValue, onChange, categoryName }) => {
             </div>
         </div>
     )
-}
+})
 
 // Simple category section component
-const CategorySection = ({ category, nodeProps, onPropChange, isExpanded, onToggle }) => {
-    if (!category.props || category.props.length === 0) return null
+const CategorySection = ({ category, nodeId }) => {
+    // todo: [mid], create more granular atoms if needed.., but also check its mem footprint..
+    // we access nodeProps here, as we would then pass the actual prop values for each rows, and then in turn memoize the rows
+    const nodeProps = useAtomValue(nodePropsAtomFamily(nodeId))
+    const categoryName = category.category
+    const [isExpanded, setIsExpanded] = useState(true)
+
+    const onToggle = () => {
+        setIsExpanded(!isExpanded)
+    }
 
     return (
         <div className="border border-gray-200 rounded-lg">
@@ -42,20 +51,20 @@ const CategorySection = ({ category, nodeProps, onPropChange, isExpanded, onTogg
                 onClick={onToggle}
                 className="w-full flex items-center justify-between p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-t-lg"
             >
-                <span className="font-medium text-gray-800 capitalize">{category.category}</span>
+                <span className="font-medium text-gray-800 capitalize">{categoryName}</span>
                 <span className="text-gray-500">{isExpanded ? '▼' : '▶'}</span>
             </button>
             {isExpanded && (
                 <div className="p-3 space-y-3">
                     {category.props.map((propMeta) => {
-                        const currentValue = nodeProps[category.category]?.[propMeta.name]
+                        const currentValue = nodeProps[categoryName]?.[propMeta.name]
                         return (
                             <PropEditorRow
                                 key={propMeta.name}
                                 propMeta={propMeta}
                                 currentValue={currentValue}
-                                onChange={onPropChange}
-                                categoryName={category.category}
+                                categoryName={categoryName}
+                                nodeId={nodeId}
                             />
                         )
                     })}
@@ -67,42 +76,26 @@ const CategorySection = ({ category, nodeProps, onPropChange, isExpanded, onTogg
 
 // Props editor component
 const PropsEditor = ({ nodeId }) => {
-    const nodeProps = useAtomValue(nodePropsAtomFamily(nodeId))
-    const updateNodeProps = useSetAtom(updateNodePropsAtom)
-    const [expandedCategories, setExpandedCategories] = useState({})
-
     // Extract component type from nodeId (format: "ComponentType:id")
     const componentType = nodeId.split(":")[0]
+
     const categorizedProps = getCategorizedProps(componentType)
 
     if (categorizedProps.length === 0) {
         return <div className="text-sm text-gray-500">No props available</div>
     }
 
-    const handlePropChange = (propKey, propValue, category) => {
-        updateNodeProps({ nodeId, propKey, propValue, category })
-    }
-
-    const toggleCategory = (categoryName) => {
-        setExpandedCategories(prev => ({
-            ...prev,
-            [categoryName]: !prev[categoryName]
-        }))
-    }
-
     return (
         <div className="space-y-3">
-            {categorizedProps.map((category, categoryIndex) => {
-                const isExpanded = expandedCategories[category.category] ?? true
+            {categorizedProps.map((category) => {
+
+                if (!category.props || category.props.length === 0) return null
 
                 return (
                     <CategorySection
-                        key={categoryIndex}
+                        key={category.category}
                         category={category}
-                        nodeProps={nodeProps}
-                        onPropChange={handlePropChange}
-                        isExpanded={isExpanded}
-                        onToggle={() => toggleCategory(category.category)}
+                        nodeId={nodeId}
                     />
                 )
             })}
@@ -112,6 +105,9 @@ const PropsEditor = ({ nodeId }) => {
 
 // todo: [high], check whether or not we need to memoize its children, or even whether its worth it
 // memoization here, would optimize the rendering of each individual prop editors, and the categories sections
+
+// answer -> currently we needed to memoize each row rendering prop editors, and it works with objects as well
+// cause currently, the objects are static, if rendered from a backend, store em inside an atom or something..
 
 const EditBar = () => {
     const selectedElement = useAtomValue(selectedElementAtom)

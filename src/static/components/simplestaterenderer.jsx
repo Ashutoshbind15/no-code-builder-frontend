@@ -1,11 +1,11 @@
-import React from "react"
+import React, { memo } from "react"
 import { useAtomValue } from 'jotai'
 import { componentTakesChildren, customNamesToComponentRegistry } from "../../predefcomps/metadata"
 import { nodeAtomFamily, nodePropsAtomFamily } from "../atoms"
 import NodeWrappers from "./NodeWrappers"
 
 // Optimized renderer using Jotai atoms - only re-renders when specific node data changes
-const SimpleRenderer = ({ nodeId }) => {
+const SimpleRenderer = memo(({ nodeId }) => {
     const node = useAtomValue(nodeAtomFamily(nodeId))
     const categorizedProps = useAtomValue(nodePropsAtomFamily(nodeId))
 
@@ -26,6 +26,7 @@ const SimpleRenderer = ({ nodeId }) => {
     const takesChildren = componentTakesChildren(node.componentType)
 
     // Spread the categorized props directly (e.g., content={...}, containerStyles={...})
+    // noice, as here the composition pattern applies, no memo needed for the wrappers
     if (takesChildren) {
         return (
             <NodeWrappers nodeId={nodeId}>
@@ -41,6 +42,6 @@ const SimpleRenderer = ({ nodeId }) => {
             <CustomComponent {...categorizedProps} />
         </NodeWrappers>
     }
-}
+})
 
 export default SimpleRenderer;

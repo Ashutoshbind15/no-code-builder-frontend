@@ -567,9 +567,19 @@ export const getCategorizedDefaultProps = (componentName) => {
 }
 
 // Helper function to get categorized props for a component
-export const getCategorizedProps = (componentName) => {
-    return propMetadata[componentName] || []
-}
+export const getCategorizedProps = (() => {
+    const cache = new Map()
+
+    return (componentName) => {
+        if (cache.has(componentName)) {
+            return cache.get(componentName)
+        }
+
+        const categorizedProps = propMetadata[componentName] || []
+        cache.set(componentName, categorizedProps)
+        return categorizedProps
+    }
+})()
 
 // Helper function to check if component takes children
 export const componentTakesChildren = (componentName) => {
