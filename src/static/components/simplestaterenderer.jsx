@@ -3,6 +3,7 @@ import { useAtomValue } from 'jotai'
 import { componentTakesChildren, customNamesToComponentRegistry } from "../../predefcomps/metadata"
 import { nodeAtomFamily, nodePropsAtomFamily } from "../atoms"
 import NodeWrappers from "./NodeWrappers"
+import EventWrapper from "./EventWrapper"
 
 // Optimized renderer using Jotai atoms - only re-renders when specific node data changes
 const SimpleRenderer = memo(({ nodeId }) => {
@@ -30,17 +31,23 @@ const SimpleRenderer = memo(({ nodeId }) => {
     if (takesChildren) {
         return (
             <NodeWrappers nodeId={nodeId}>
-                <CustomComponent {...categorizedProps}>
-                    {node.children?.map((childId) => (
-                        <SimpleRenderer key={childId} nodeId={childId} />
-                    ))}
-                </CustomComponent>
+                <EventWrapper nodeId={nodeId}>
+                    <CustomComponent {...categorizedProps}>
+                        {node.children?.map((childId) => (
+                            <SimpleRenderer key={childId} nodeId={childId} />
+                        ))}
+                    </CustomComponent>
+                </EventWrapper>
             </NodeWrappers>
         )
     } else {
-        return <NodeWrappers nodeId={nodeId}>
-            <CustomComponent {...categorizedProps} />
-        </NodeWrappers>
+        return (
+            <NodeWrappers nodeId={nodeId}>
+                <EventWrapper nodeId={nodeId}>
+                    <CustomComponent {...categorizedProps} />
+                </EventWrapper>
+            </NodeWrappers>
+        )
     }
 })
 

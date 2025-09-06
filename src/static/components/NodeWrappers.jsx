@@ -1,5 +1,5 @@
-import { useAtom, useSetAtom } from "jotai";
-import { selectedElementAtom, removeNodeAtom, nodeAtomFamily, findParentNodeIdAtom } from "../atoms";
+import { useAtom, useSetAtom, useAtomValue } from "jotai";
+import { selectedElementAtom, removeNodeAtom, nodeAtomFamily, findParentNodeIdAtom, previewModeAtom } from "../atoms";
 import AddElementDialog from "./AddElementDialog";
 
 const NodeWrappers = ({ nodeId, children }) => {
@@ -13,10 +13,16 @@ const NodeWrappers = ({ nodeId, children }) => {
 const NodeSelectionWrapper = ({ nodeId, children }) => {
     const [selectedElement, setSelectedElement] = useAtom(selectedElementAtom);
     const removeNode = useSetAtom(removeNodeAtom);
+    const previewMode = useAtomValue(previewModeAtom);
     // todo: [mid] [optimization], store refs bi-directionally, in the state itself, saving a recursive call for finding..
     const findParentNodeId = useSetAtom(findParentNodeIdAtom);
 
     const isSelected = selectedElement === nodeId;
+
+    // In preview mode, return children without selection wrapper
+    if (previewMode) {
+        return children;
+    }
 
     const handleDelete = async (e) => {
         e.stopPropagation();
