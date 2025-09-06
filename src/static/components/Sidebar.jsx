@@ -2,6 +2,7 @@
 import { useAtomValue, useSetAtom } from 'jotai'
 import AddElementDialog from './AddElementDialog'
 import { nodeAtomFamily, selectedElementAtom, rootNodeIdAtom } from "../atoms"
+import PublishButton from "../../components/PublishButton"
 
 // Helper function to generate friendly names from node IDs
 const generateFriendlyName = (id) => {
@@ -96,6 +97,9 @@ const Sidebar = () => {
             <div className="p-4">
                 <h2 className="text-lg font-bold text-gray-800 mb-4">Editor</h2>
                 <FileTreeView />
+                <div className="mt-6">
+                    <PublishButton />
+                </div>
             </div>
         </div>
     )

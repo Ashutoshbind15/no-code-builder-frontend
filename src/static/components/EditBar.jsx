@@ -3,6 +3,7 @@ import { useAtomValue, useSetAtom } from 'jotai'
 import { getCategorizedProps } from "../../predefcomps/metadata"
 import { selectedElementAtom, nodePropsAtomFamily, updateNodePropsAtom } from "../atoms"
 import { getPropEditor } from "../../predefcomps/propEditors"
+import PublishButton from "../../components/PublishButton"
 
 const generateFriendlyName = (id) => {
     return id.split(':')[0]
@@ -157,6 +158,9 @@ const EditBar = () => {
                     <h3 className="text-sm font-semibold text-gray-700 mb-3">Properties</h3>
                     <PropsEditor nodeId={selectedElement} />
                 </div>
+
+                {/* Publish Button */}
+                <PublishButton />
             </div>
         </div>
     )
