@@ -1,5 +1,5 @@
 import { useAtom, useSetAtom } from "jotai";
-import { selectedElementAtom, removeNodeAtom, nodeAtomFamily, findParentNodeIdAtom } from "../atoms";
+import { selectedElementAtom, removeNodeAtom, findParentNodeIdAtom } from "../atoms";
 import AddElementDialog from "./AddElementDialog";
 
 // controllable selection, draggable, droppable, deletable from here
