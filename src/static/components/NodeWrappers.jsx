@@ -2,6 +2,9 @@ import { useAtom, useSetAtom } from "jotai";
 import { selectedElementAtom, removeNodeAtom, nodeAtomFamily, findParentNodeIdAtom } from "../atoms";
 import AddElementDialog from "./AddElementDialog";
 
+// controllable selection, draggable, droppable, deletable from here
+
+// todo: [high], look up the node meta, and for the nodes that dont take children, dont allow the children addition for them
 const NodeWrappers = ({ nodeId, children }) => {
     return (
         <NodeSelectionWrapper nodeId={nodeId}>

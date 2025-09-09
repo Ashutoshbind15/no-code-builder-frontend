@@ -6,6 +6,7 @@ import Old from './pages/Old.jsx'
 import { Layout } from './components/Layout.jsx'
 import EditorDnd from './pages/EditorDnd.jsx'
 import TestPage from './pages/Test.jsx'
+import Formbuilder from './pages/Formbuilder.jsx'
 
 createRoot(document.getElementById('root')).render(
   <>
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/old" element={<Old />} />
           <Route path="/dndtest" element={<EditorDnd />} />
           <Route path="/test" element={<TestPage />} />
+          <Route path="/formbuilder" element={<Formbuilder />} />
         </Route>
       </Routes>
     </BrowserRouter>
